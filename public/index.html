@@ -1,0 +1,1233 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#F3F4F1" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#15181D" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Zi Review">
+<title>Zi Review</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png">
+<script src="hanzi-writer.min.js"></script>
+<script src="strokes.js"></script>
+<style>
+:root{
+  --paper:#F3F4F1; --sheet:#FFFFFF; --ink:#1D2433; --ink-2:#5B6474; --ink-3:#8A919C;
+  --line:#DCDFD8; --seal:#B8322A; --seal-ink:#FFFFFF; --seal-soft:rgba(184,50,42,.10);
+  --grid:#D9A39E; --grid-soft:rgba(184,50,42,.28);
+  --t1:#D23A2E; --t2:#1E9A4A; --t3:#2B5CD6; --t4:#8A3FC7; --t5:#7A808A;
+  --kai:"Kaiti SC","STKaiti","KaiTi","BiauKai","Noto Serif SC","Songti SC",serif;
+  --ui:system-ui,-apple-system,"PingFang SC","Hiragino Sans GB","Noto Sans SC","Microsoft YaHei",sans-serif;
+  --r-lg:18px; --r-sm:10px;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --paper:#15181D; --sheet:#1D2129; --ink:#E9EBEE; --ink-2:#A6ADB8; --ink-3:#737B87;
+    --line:#2D323B; --seal:#E05A4E; --seal-ink:#1A0E0D; --seal-soft:rgba(224,90,78,.14);
+    --grid:#6A3A36; --grid-soft:rgba(224,90,78,.30);
+    --t1:#F06A5E; --t2:#4CC27A; --t3:#6E95F2; --t4:#B888EA; --t5:#9AA1AC;
+  }
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--ui);font-size:16px;line-height:1.5;-webkit-text-size-adjust:100%}
+body.locked{overflow:hidden}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--seal);outline-offset:2px}
+.t1{color:var(--t1)}.t2{color:var(--t2)}.t3{color:var(--t3)}.t4{color:var(--t4)}.t5{color:var(--t5)}
+
+/* Shell */
+.app{display:grid;grid-template-columns:232px 1fr;min-height:100dvh}
+.rail{position:sticky;top:0;height:100dvh;display:flex;flex-direction:column;gap:4px;padding:24px 14px;border-right:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:10px;font-weight:650;margin:0 8px 22px}
+.seal{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:6px;background:var(--seal);color:var(--seal-ink);font-family:var(--kai);font-size:20px;line-height:1}
+.tab{display:flex;align-items:center;gap:12px;padding:10px 12px;border:0;background:none;border-radius:var(--r-sm);color:var(--ink-2);text-align:left}
+.tab svg{width:20px;height:20px;flex:none}
+.tab[aria-current="page"]{background:var(--sheet);color:var(--ink);box-shadow:0 0 0 1px var(--line)}
+main{padding:40px clamp(16px,4vw,56px) 64px;max-width:860px;width:100%}
+@media (max-width:820px){
+  .app{display:block}
+  .rail{position:fixed;z-index:5;top:auto;bottom:0;left:0;right:0;height:auto;flex-direction:row;justify-content:space-around;gap:0;padding:6px 6px calc(6px + env(safe-area-inset-bottom));border-right:0;border-top:1px solid var(--line);background:var(--paper)}
+  .brand{display:none}
+  .tab{flex-direction:column;gap:2px;font-size:12px;padding:6px 10px;flex:1;align-items:center}
+  .tab[aria-current="page"]{background:none;box-shadow:none;color:var(--seal)}
+  main{padding:24px 16px calc(96px + env(safe-area-inset-bottom))}
+}
+
+/* Type */
+h1{font-size:clamp(28px,5vw,36px);line-height:1.15;margin:0;font-weight:700;letter-spacing:-.01em}
+h1 .zh{font-family:var(--kai);font-weight:400}
+h2{font-size:18px;margin:40px 0 12px;font-weight:650}
+.sub{color:var(--ink-2);margin:6px 0 0}
+.muted{color:var(--ink-3);font-size:14px}
+
+/* Today */
+.sheet{background:var(--sheet);border:1px solid var(--line);border-radius:var(--r-lg);padding:24px}
+.today-main{margin-top:24px;display:flex;flex-wrap:wrap;gap:20px;align-items:center;justify-content:space-between}
+.today-main p{margin:0;font-size:20px;line-height:1.4;max-width:30ch}
+.today-main b{font-size:28px;font-weight:700}
+.btn{border:1px solid var(--line);background:var(--sheet);border-radius:999px;padding:10px 18px;font-weight:600}
+.btn.primary{background:var(--seal);border-color:var(--seal);color:var(--seal-ink);padding:14px 26px;font-size:17px}
+.btn.small{padding:6px 12px;font-size:14px}
+.btn:disabled{opacity:.45;cursor:default}
+.stamps{display:grid;grid-template-columns:repeat(14,1fr);gap:6px;max-width:560px}
+.stamp{aspect-ratio:1;border-radius:5px;border:1px dashed var(--line);display:grid;place-items:center;font-family:var(--kai);font-size:clamp(12px,3vw,18px);color:transparent}
+.stamp.on{background:var(--seal);border:0;color:var(--seal-ink);transform:rotate(-4deg)}
+.stamp.today{border:1.5px solid var(--seal)}
+.stamp-days{display:grid;grid-template-columns:repeat(14,1fr);gap:6px;max-width:560px;margin-top:4px;font-size:11px;color:var(--ink-3);text-align:center}
+.decks{display:grid;gap:10px}
+.deck{display:grid;grid-template-columns:1fr auto;gap:4px 16px;align-items:center;padding:14px 16px;background:var(--sheet);border:1px solid var(--line);border-radius:var(--r-sm)}
+.deck-sub{display:block;margin-top:2px}
+.btn.go{background:var(--seal);border-color:var(--seal);color:var(--seal-ink)}
+.bar{grid-column:1/-1;height:6px;border-radius:3px;background:var(--line);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--seal)}
+
+/* Review */
+.review{position:fixed;inset:0;z-index:20;background:var(--paper);display:flex;flex-direction:column}
+.review[hidden]{display:none}
+.rv-top{display:flex;align-items:center;gap:12px;padding:calc(10px + env(safe-area-inset-top)) 16px 10px;max-width:720px;width:100%;margin:0 auto}
+.rv-top .left{flex:1;color:var(--ink-2);font-size:14px}
+.icon-btn{border:0;background:none;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;color:var(--ink-2)}
+.icon-btn:hover{background:var(--sheet)}
+.icon-btn svg{width:22px;height:22px}
+.rv-body{flex:1;overflow:auto;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:16px;text-align:center}
+.rv-body>*{flex-shrink:0}
+.rv-body>:first-child{margin-top:auto}
+.rv-body>:last-child{margin-bottom:auto}
+.exs{margin-top:22px;display:grid;gap:8px;width:100%;max-width:560px;text-align:left}
+.exb{display:block;width:100%;text-align:left;border:1px solid var(--line);background:var(--sheet);border-radius:12px;padding:10px 14px}
+.exb:hover{border-color:var(--grid)}
+.exb .zh{display:block;font-family:var(--kai);font-size:20px;line-height:1.45}
+.exb .zh b{font-weight:inherit;color:var(--seal)}
+.exb .p{display:block;font-size:13px;line-height:1.4;color:var(--ink-3);margin-top:2px}
+.exb .e{display:block;font-size:14px;line-height:1.4;color:var(--ink-2);margin-top:2px}
+.usage{margin-top:8px;color:var(--ink-2);font-size:15px}
+.usage span{font-family:var(--kai);font-size:18px;color:var(--ink)}
+.rv-bottom{padding:12px 16px calc(16px + env(safe-area-inset-bottom));max-width:620px;width:100%;margin:0 auto}
+.cells{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.col{display:flex;flex-direction:column;align-items:center;gap:6px}
+.col .py{font-size:18px;min-height:27px}
+.cell{width:var(--c,112px);height:var(--c,112px);position:relative;border:1.5px solid var(--grid);background:var(--sheet);display:grid;place-items:center;font-family:var(--kai);font-size:calc(var(--c,112px)*.74);line-height:1}
+.cell svg.grid{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.cell svg.grid path{stroke:var(--grid-soft);stroke-width:1;stroke-dasharray:4 4;fill:none;vector-effect:non-scaling-stroke}
+.cell svg.grid path.d{opacity:.55}
+.hwcell{touch-action:none;cursor:crosshair;border-width:2px}
+.hwcell>svg:not(.grid){position:relative}
+.mini{display:flex;gap:6px;justify-content:center;margin:4px 0 14px}
+.mini .cell{--c:44px}
+.mini .cell.now{border-color:var(--seal);box-shadow:0 0 0 2px var(--seal-soft)}
+.hw-status{color:var(--ink-3);font-size:14px;margin-top:12px;min-height:21px}
+.hw-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.seg{display:inline-grid;grid-auto-flow:column;gap:2px;padding:3px;margin-top:16px;background:var(--line);border-radius:999px}
+.seg button{border:0;background:none;padding:7px 18px;border-radius:999px;font-weight:600;color:var(--ink-2)}
+.seg button[aria-selected="true"]{background:var(--sheet);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.12)}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.opt{display:flex;flex-direction:column;gap:2px;text-align:left;padding:14px 16px;border:1px solid var(--line);background:var(--sheet);border-radius:var(--r-sm)}
+.opt span{color:var(--ink-2);font-size:14px}
+.opt[aria-pressed="true"]{border-color:var(--seal);box-shadow:0 0 0 1.5px var(--seal)}
+.pick-tools{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin:4px 0 8px}
+.pick-h{font-size:15px;font-weight:600;margin:18px 0 8px;color:var(--ink-2)}
+#pg{touch-action:pan-y;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.pick-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:6px}
+.tile{position:relative;display:flex;flex-direction:column;align-items:center;gap:0;padding:10px 4px 8px;border:1px solid var(--line);background:var(--sheet);border-radius:var(--r-sm)}
+.tile .hz{font-family:var(--kai);font-size:22px;line-height:1.3}
+.tile .tp{font-size:11px;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.tile[aria-pressed="true"]{border-color:var(--seal);background:var(--seal-soft)}
+.tile[aria-pressed="true"]::after{content:"";position:absolute;top:5px;right:5px;width:14px;height:14px;border-radius:50%;background:var(--seal) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 8.5l2.5 2.5L12 5.5' fill='none' stroke='white' stroke-width='2'/%3E%3C/svg%3E") center/12px no-repeat}
+.dict-bar{position:sticky;bottom:16px;z-index:3;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:20px;padding:12px 14px;background:var(--sheet);border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:0 6px 20px rgba(0,0,0,.08)}
+@media (max-width:820px){.dict-bar{bottom:calc(76px + env(safe-area-inset-bottom))}}
+.dict-bar .btn.primary{padding:12px 20px;font-size:16px}
+.shuf{display:flex;align-items:center;gap:8px;font-size:15px;color:var(--ink-2)}
+.shuf input{width:20px;height:20px;accent-color:var(--seal)}
+.dict-py{font-size:clamp(30px,8vw,40px);font-weight:500;letter-spacing:.02em;margin-bottom:4px}
+.score{display:flex;align-items:baseline;justify-content:center;gap:8px;margin-top:8px}
+.score b{font-size:64px;line-height:1;font-family:var(--kai);font-weight:400;color:var(--seal)}
+.score span{font-size:24px;color:var(--ink-2)}
+.status.r-right{background:var(--t2);border-color:var(--t2);color:var(--sheet)}
+.status.r-shaky{border-color:var(--t3);color:var(--t3)}
+.status.r-miss{border-color:var(--seal);color:var(--seal)}
+.row.dres,.row.hrow{grid-template-columns:minmax(84px,auto) 1fr auto}
+.missed{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 12px}
+.mchip{padding:3px 10px;border:1px solid var(--line);border-radius:999px;font-size:13px;color:var(--ink-2)}
+.mchip .hz{font-family:var(--kai);font-size:18px;color:var(--ink)}
+#dict .rv-body .list{text-align:left}
+.seg button{padding:7px 14px}
+.fc-count{display:flex;justify-content:space-between;max-width:520px;width:100%;margin:0 auto;padding:0 20px;font-size:14px}
+.fc-count b{font-size:18px}
+.fc-l{color:var(--t3)}.fc-k{color:var(--t2)}
+.fc-stage{flex:1;display:flex;align-items:center;justify-content:center;padding:14px 20px;perspective:1400px;min-height:0}
+.fc-swipe{position:relative;width:min(100%,460px);height:min(62vh,520px);touch-action:none;transition:transform .2s ease-out;cursor:grab}
+.fc-card{position:relative;width:100%;height:100%;transform-style:preserve-3d;transition:transform .35s ease}
+.fc-card.flipped{transform:rotateY(180deg)}
+.fc-face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:24px;text-align:center;background:var(--sheet);border:1px solid var(--line);border-radius:22px;box-shadow:0 10px 30px rgba(0,0,0,.08);overflow:auto}
+.fc-back{transform:rotateY(180deg)}
+.fc-hz{font-family:var(--kai);font-size:clamp(56px,16vw,96px);line-height:1.15}
+.fc-hz-b{font-size:clamp(44px,12vw,72px)}
+.fc-mn{font-size:clamp(24px,6vw,32px);font-weight:600;max-width:16ch;line-height:1.3}
+.fc-py{font-size:22px}
+.fc-mn2{font-size:18px;color:var(--ink-2);max-width:28ch}
+.fc-ex{margin-top:8px;max-width:420px}
+.fc-hint{position:absolute;bottom:16px;left:0;right:0;margin:0;font-size:13px;color:var(--ink-3)}
+.fc-tag{position:absolute;top:18px;padding:6px 12px;border-radius:8px;font-weight:700;font-size:15px;border:2px solid;opacity:0;pointer-events:none;background:var(--sheet)}
+.fc-tag-l{right:18px;color:var(--t3);border-color:var(--t3);transform:rotate(8deg)}
+.fc-tag-r{left:18px;color:var(--t2);border-color:var(--t2);transform:rotate(-8deg)}
+.fc-btn-l{color:var(--t3);border-color:var(--t3)}
+.fc-btn-k{background:var(--t2);border-color:var(--t2);color:var(--sheet)}
+#flash{overflow:hidden}
+@media (prefers-reduced-motion:reduce){.fc-card{transition:none}.fc-swipe{transition:none}}
+.rate.suggest{border-color:var(--seal);box-shadow:0 0 0 1.5px var(--seal)}
+.rate.suggest small{color:var(--seal)}
+.verdict{margin-top:14px;font-size:15px;color:var(--ink-2)}
+.cell span{position:relative}
+.prompt{font-size:clamp(24px,5vw,32px);font-weight:650;max-width:22ch;margin:0 0 20px}
+.hint{color:var(--ink-3);font-size:14px;margin:18px 0 0}
+.answer{margin-top:22px;max-width:46ch}
+.answer .meaning{font-size:22px;font-weight:600}
+.answer .ex{margin-top:14px;font-family:var(--kai);font-size:22px}
+.answer .ex-en{color:var(--ink-2);font-size:15px}
+.sentence{font-family:var(--kai);font-size:clamp(30px,7vw,46px);line-height:1.5;max-width:18em}
+.blank{display:inline-block;min-width:1.4em;border-bottom:3px solid var(--seal);margin:0 .08em;color:var(--seal)}
+.point{display:inline-block;padding:4px 12px;border-radius:999px;background:var(--seal-soft);color:var(--seal);font-size:14px;font-weight:600;margin-bottom:22px}
+.note{margin-top:18px;padding:14px 16px;border-left:3px solid var(--seal);background:var(--sheet);text-align:left;border-radius:0 var(--r-sm) var(--r-sm) 0}
+.rates{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.rate{border:1px solid var(--line);background:var(--sheet);border-radius:14px;padding:10px 4px;display:flex;flex-direction:column;align-items:center;gap:1px}
+.rate b{font-size:15px}
+.rate small{color:var(--ink-3);font-size:13px}
+.rate.again b{color:var(--seal)}
+.reveal{width:100%;padding:16px;font-size:17px}
+.keys{text-align:center;color:var(--ink-3);font-size:12px;margin-top:8px}
+@media (hover:none){.keys{display:none}}
+.progress-line{height:3px;background:var(--line)}
+.progress-line i{display:block;height:100%;background:var(--seal);transition:width .25s}
+
+/* Words */
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin:20px 0 14px}
+.search{flex:1;min-width:180px;padding:10px 14px;border:1px solid var(--line);border-radius:999px;background:var(--sheet)}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.chip{border:1px solid var(--line);background:none;border-radius:999px;padding:5px 12px;font-size:14px;color:var(--ink-2)}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.list{background:var(--sheet);border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden}
+.row{display:grid;grid-template-columns:minmax(84px,auto) 1fr auto;gap:4px 16px;align-items:center;width:100%;padding:12px 16px;border:0;border-top:1px solid var(--line);background:none;text-align:left}
+.row{border-top:0}
+.item+.item{border-top:1px solid var(--line)}
+.detail{padding:0 16px 16px}
+.detail .exs{margin-top:4px;max-width:none}
+.detail .note{margin:0 0 10px}
+.detail .usage{margin:0 0 10px}
+.play{display:inline-flex;align-items:center;gap:6px;margin-bottom:10px}
+.play svg{width:16px;height:16px}
+#review .cells,#review .sentence{cursor:pointer}
+.row.gram{grid-template-columns:1fr auto}
+.row.gram .hz{grid-column:1/-1}
+.row .hz{font-family:var(--kai);font-size:28px;line-height:1.2}
+.row .py{font-size:14px}
+.row .mn{color:var(--ink-2);font-size:15px}
+.status{font-size:12px;padding:2px 8px;border-radius:999px;border:1px solid var(--line);color:var(--ink-3);white-space:nowrap}
+.status.learning{border-color:var(--t3);color:var(--t3)}
+.status.young{border-color:var(--t2);color:var(--t2)}
+.status.mature{background:var(--t2);border-color:var(--t2);color:var(--sheet)}
+.empty{padding:32px 16px;text-align:center;color:var(--ink-2)}
+
+/* Progress */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.stat{background:var(--sheet);border:1px solid var(--line);border-radius:var(--r-sm);padding:14px 16px}
+.stat b{display:block;font-size:26px;line-height:1.2}
+.stat span{color:var(--ink-2);font-size:14px}
+.chart{display:flex;align-items:flex-end;gap:4px;height:140px;padding:12px 12px 0;background:var(--sheet);border:1px solid var(--line);border-radius:var(--r-sm) var(--r-sm) 0 0}
+.chart div{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;gap:3px;font-size:11px;color:var(--ink-3)}
+.chart i{width:100%;max-width:28px;border-radius:4px 4px 0 0;background:var(--seal);min-height:2px}
+.chart.blue i{background:var(--t3)}
+.axis{display:flex;gap:4px;padding:6px 12px 8px;background:var(--sheet);border:1px solid var(--line);border-top:0;border-radius:0 0 var(--r-sm) var(--r-sm);font-size:11px;color:var(--ink-3)}
+.axis span{flex:1;text-align:center}
+
+/* Settings */
+.field{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:14px 0;border-top:1px solid var(--line)}
+.field:first-child{border-top:0}
+.field label{font-weight:550}
+.field p{margin:2px 0 0;color:var(--ink-3);font-size:14px}
+.field input[type=number],.field select{width:90px;padding:8px 10px;border:1px solid var(--line);border-radius:var(--r-sm);background:var(--paper)}
+.field input[type=checkbox]{width:22px;height:22px;accent-color:var(--seal)}
+.btn-row{display:flex;gap:10px;flex-wrap:wrap}
+.danger{color:var(--seal)}
+pre{background:var(--paper);border:1px solid var(--line);border-radius:var(--r-sm);padding:12px;overflow:auto;font-size:13px}
+
+.toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(20px);opacity:0;background:var(--ink);color:var(--paper);padding:10px 16px;border-radius:999px;font-size:14px;transition:.2s;pointer-events:none;z-index:30;max-width:90vw}
+.toast.show{opacity:1;transform:translateX(-50%)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+  <nav class="rail" id="nav" aria-label="Main">
+    <div class="brand"><span class="seal">字</span>Zi Review</div>
+    <button class="tab" data-view="today"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg>Today</button>
+    <button class="tab" data-view="words"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h11"/></svg>Words</button>
+    <button class="tab" data-view="progress"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Progress</button>
+    <button class="tab" data-view="settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg>Settings</button>
+  </nav>
+  <main id="main"></main>
+</div>
+<div id="review" class="review" hidden role="dialog" aria-label="Review"></div>
+<div id="dict" class="review" hidden role="dialog" aria-label="听写 test"></div>
+<div id="flash" class="review" hidden role="dialog" aria-label="Flashcards"></div>
+<input type="file" id="file" accept=".json,application/json" hidden>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* ---------- Built-in lessons: Boya 中级冲刺 I, 第3–4课 ---------- */
+const APP_VERSION='2026-11-24 (flashcards)';
+const SAMPLE_DECKS = [{"deck":"第3课 香港的高楼，北京的大树","cards":[{"hanzi":"一带","pinyin":"yí dài","meaning":"area, region (around a place) (n.)","examples":[{"zh":"天安门一带有很多古代建筑。","py":"Tiān ān mén yí dài yǒu hěn duō gǔ dài jiàn zhù.","en":"There are many ancient buildings around Tiananmen."},{"zh":"这一带晚上很安静。","py":"Zhè yí dài wǎn shàng hěn ān jìng.","en":"This area is very quiet at night."}]},{"hanzi":"高楼林立","pinyin":"gāo lóu lín lì","meaning":"tall buildings standing like a forest","examples":[{"zh":"深圳从一个小渔村变成了高楼林立的大都市。","py":"Shēn zhèn cóng yí gè xiǎo yú cūn biàn chéng le gāo lóu lín lì de dà dū shì.","en":"Shenzhen went from a fishing village to a city of skyscrapers."},{"zh":"现在的浦东高楼林立。","py":"Xiàn zài de Pǔ dōng gāo lóu lín lì.","en":"Pudong today is a forest of skyscrapers."}]},{"hanzi":"车如流水","pinyin":"chē rú liú shuǐ","meaning":"heavy traffic, cars flowing like water","examples":[{"zh":"以前这条路上汽车很少，现在车如流水，非常热闹。","py":"Yǐ qián zhè tiáo lù shàng qì chē hěn shǎo, xiàn zài chē rú liú shuǐ, fēi cháng rè nao.","en":"This road used to be empty; now traffic streams along it."},{"zh":"一到下班时间，长安街上车如流水。","py":"Yí dào xià bān shí jiān, Cháng ān jiē shàng chē rú liú shuǐ.","en":"At rush hour, Chang'an Avenue is a stream of cars."}]},{"hanzi":"显","pinyin":"xiǎn","meaning":"to show, to appear (v.)","examples":[{"zh":"他昨天没有休息好，今天显得很累。","py":"Tā zuó tiān méi yǒu xiū xi hǎo, jīn tiān xiǎn de hěn lèi.","en":"He didn't rest well yesterday and looks tired today."},{"zh":"穿上这件衣服，你显得年轻多了。","py":"Chuān shàng zhè jiàn yī fu, nǐ xiǎn de nián qīng duō le.","en":"You look much younger in these clothes."}]},{"hanzi":"透亮","pinyin":"tòu liàng","meaning":"perfectly clear, bright (adj.)","examples":[{"zh":"今天一点儿雾都没有，天空很透亮。","py":"Jīn tiān yì diǎnr wù dōu méi yǒu, tiān kōng hěn tòu liàng.","en":"No fog at all today; the sky is crystal clear."},{"zh":"窗户擦得透亮。","py":"Chuāng hu cā de tòu liàng.","en":"The windows have been wiped crystal clear."}]},{"hanzi":"大理石","pinyin":"dà lǐ shí","meaning":"marble (n.)","examples":[{"zh":"这座大楼的地面都是大理石的。","py":"Zhè zuò dà lóu de dì miàn dōu shì dà lǐ shí de.","en":"The floors in this building are all marble."},{"zh":"大理石的桌子摸起来很凉。","py":"Dà lǐ shí de zhuō zi mō qǐ lái hěn liáng.","en":"A marble table feels cold to the touch."}]},{"hanzi":"林荫树","pinyin":"lín yīn shù","meaning":"roadside shade trees (n.)","usage":"林荫大道 (tree-lined avenue)","examples":[{"zh":"这条路两边种满了林荫树，夏天走在下面很凉快。","py":"Zhè tiáo lù liǎng biān zhòng mǎn le lín yīn shù, xià tiān zǒu zài xià miàn hěn liáng kuài.","en":"Shade trees line both sides of this road, so it's cool walking there in summer."},{"zh":"城市里需要多种一些林荫树。","py":"Chéng shì lǐ xū yào duō zhǒng yì xiē lín yīn shù.","en":"Cities need to plant more shade trees."}]},{"hanzi":"五光十色","pinyin":"wǔ guāng shí sè","meaning":"multicoloured, dazzling","examples":[{"zh":"东西方文化的共同影响，使香港成为一个五光十色的城市。","py":"Dōng xī fāng wén huà de gòng tóng yǐng xiǎng, shǐ Xiāng gǎng chéng wéi yí gè wǔ guāng shí sè de chéng shì.","en":"East and West together made Hong Kong a dazzling, colourful city."},{"zh":"商店里摆满了五光十色的商品。","py":"Shāng diàn lǐ bǎi mǎn le wǔ guāng shí sè de shāng pǐn.","en":"The shop is full of colourful goods."}]},{"hanzi":"寸土寸金","pinyin":"cùn tǔ cùn jīn","meaning":"land is extremely expensive","examples":[{"zh":"每个大城市的中心商业区都是寸土寸金。","py":"Měi gè dà chéng shì de zhōng xīn shāng yè qū dōu shì cùn tǔ cùn jīn.","en":"Every big city's CBD has extremely expensive land."},{"zh":"在寸土寸金的香港，房子都很小。","py":"Zài cùn tǔ cùn jīn de Xiāng gǎng, fáng zi dōu hěn xiǎo.","en":"In Hong Kong, where land is gold, flats are all tiny."}]},{"hanzi":"似乎","pinyin":"sì hū","meaning":"seem (written) (adv.)","examples":[{"zh":"外面看上去似乎要下雨。","py":"Wài miàn kàn shàng qù sì hū yào xià yǔ.","en":"It looks like it's going to rain outside."},{"zh":"他似乎不太高兴，一句话也不说。","py":"Tā sì hū bú tài gāo xìng, yí jù huà yě bù shuō.","en":"He seems unhappy; he hasn't said a word."}]},{"hanzi":"欣赏","pinyin":"xīn shǎng","meaning":"to appreciate, to enjoy (v.)","usage":"欣赏音乐 (enjoy music)","examples":[{"zh":"我很欣赏他认真的工作态度。","py":"Wǒ hěn xīn shǎng tā rèn zhēn de gōng zuò tài dù.","en":"I really appreciate his serious attitude to work."},{"zh":"我们坐在山顶上欣赏日落。","py":"Wǒ men zuò zài shān dǐng shàng xīn shǎng rì luò.","en":"We sat on the mountaintop enjoying the sunset."}]},{"hanzi":"忽略","pinyin":"hū lüè","meaning":"to ignore, to overlook (v.)","examples":[{"zh":"放大优点、忽略缺点，更容易获得友谊。","py":"Fàng dà yōu diǎn, hū lüè quē diǎn, gèng róng yì huò dé yǒu yì.","en":"Focus on strengths and overlook flaws, and friendship comes easier."},{"zh":"很多人忽略了睡眠对健康的重要性。","py":"Hěn duō rén hū lüè le shuì mián duì jiàn kāng de zhòng yào xìng.","en":"Many people overlook how important sleep is for health."}]},{"hanzi":"依山靠海","pinyin":"yī shān kào hǎi","meaning":"nestled between mountains and sea","examples":[{"zh":"青岛是一个依山靠海的城市。","py":"Qīng dǎo shì yí gè yī shān kào hǎi de chéng shì.","en":"Qingdao sits between the mountains and the sea."},{"zh":"这个小镇依山靠海，风景非常美。","py":"Zhè ge xiǎo zhèn yī shān kào hǎi, fēng jǐng fēi cháng měi.","en":"This little town lies between the mountains and the sea and is very scenic."}]},{"hanzi":"移植","pinyin":"yí zhí","meaning":"to transplant (v.)","examples":[{"zh":"他们希望把香港的经验移植到内地去。","py":"Tā men xī wàng bǎ Xiāng gǎng de jīng yàn yí zhí dào nèi dì qù.","en":"They hope to transplant Hong Kong's experience to the mainland."},{"zh":"医生给他做了心脏移植手术。","py":"Yī shēng gěi tā zuò le xīn zàng yí zhí shǒu shù.","en":"The doctors gave him a heart transplant."}]},{"hanzi":"修剪","pinyin":"xiū jiǎn","meaning":"to trim (v.)","usage":"修剪树木 (prune trees)","examples":[{"zh":"园丁每个星期都来修剪草坪。","py":"Yuán dīng měi gè xīng qī dōu lái xiū jiǎn cǎo píng.","en":"The gardener comes every week to mow the lawn."},{"zh":"她正在修剪花园里的玫瑰。","py":"Tā zhèng zài xiū jiǎn huā yuán lǐ de méi gui.","en":"She is pruning the roses in the garden."}]},{"hanzi":"内地","pinyin":"nèi dì","meaning":"inland; the mainland (n.)","examples":[{"zh":"香港的淡水来自内地。","py":"Xiāng gǎng de dàn shuǐ lái zì nèi dì.","en":"Hong Kong's fresh water comes from the mainland."},{"zh":"很多香港人周末到内地购物。","py":"Hěn duō Xiāng gǎng rén zhōu mò dào nèi dì gòu wù.","en":"Many Hong Kongers shop on the mainland at weekends."}]},{"hanzi":"观赏","pinyin":"guān shǎng","meaning":"to view and admire (v.)","examples":[{"zh":"这种西红柿是用来观赏的，并不好吃。","py":"Zhè zhǒng xī hóng shì shì yòng lái guān shǎng de, bìng bù hǎo chī.","en":"These tomatoes are ornamental, not tasty."},{"zh":"公园里养了很多观赏鱼。","py":"Gōng yuán lǐ yǎng le hěn duō guān shǎng yú.","en":"The park keeps lots of ornamental fish."}]},{"hanzi":"疯狂","pinyin":"fēng kuáng","meaning":"crazy (adj.)","examples":[{"zh":"你们玩儿得也太疯狂了吧。","py":"Nǐ men wánr de yě tài fēng kuáng le ba.","en":"You guys partied way too wildly."},{"zh":"他疯狂地爱上了她。","py":"Tā fēng kuáng de ài shàng le tā.","en":"He fell madly in love with her."}]},{"hanzi":"过山车","pinyin":"guò shān chē","meaning":"roller coaster (n.)","examples":[{"zh":"这段经历简直像坐过山车。","py":"Zhè duàn jīng lì jiǎn zhí xiàng zuò guò shān chē.","en":"This experience was like a roller-coaster ride."},{"zh":"我第一次坐过山车的时候，吓得一直尖叫。","py":"Wǒ dì yī cì zuò guò shān chē de shí hou, xià de yì zhí jiān jiào.","en":"The first time I rode a roller coaster, I screamed the whole way."}]},{"hanzi":"刺激","pinyin":"cì jī","meaning":"thrilling (adj.); to stimulate, to provoke (v.)","examples":[{"zh":"政府制定了一系列新政策来刺激经济增长。","py":"Zhèng fǔ zhì dìng le yí xì liè xīn zhèng cè lái cì jī jīng jì zēng zhǎng.","en":"The government made new policies to stimulate growth."},{"zh":"我喜欢看刺激的动作片。","py":"Wǒ xǐ huan kàn cì jī de dòng zuò piàn.","en":"I like watching thrilling action films."}]},{"hanzi":"晕眩","pinyin":"yūn xuàn","meaning":"dizzy (v.)","examples":[{"zh":"我觉得头有点儿晕眩。","py":"Wǒ jué de tóu yǒu diǎnr yūn xuàn.","en":"I feel a little dizzy."},{"zh":"坐完过山车，他感到一阵晕眩。","py":"Zuò wán guò shān chē, tā gǎn dào yí zhèn yūn xuàn.","en":"After the roller coaster he felt a wave of dizziness."}]},{"hanzi":"游乐","pinyin":"yóu lè","meaning":"to have fun (written) (v.)","usage":"游乐园 (amusement park)","examples":[{"zh":"周末很多家长带孩子去游乐场玩儿。","py":"Zhōu mò hěn duō jiā zhǎng dài hái zi qù yóu lè chǎng wánr.","en":"At weekends many parents take their kids to the amusement park."},{"zh":"这个公园有很多游乐项目。","py":"Zhè ge gōng yuán yǒu hěn duō yóu lè xiàng mù.","en":"This park has lots of rides and games."}]},{"hanzi":"设施","pinyin":"shè shī","meaning":"installations, facilities (n.)","examples":[{"zh":"这个地区的生活设施很完善。","py":"Zhè ge dì qū de shēng huó shè shī hěn wán shàn.","en":"This area's living facilities are complete."},{"zh":"这家酒店的设施很齐全。","py":"Zhè jiā jiǔ diàn de shè shī hěn qí quán.","en":"This hotel's facilities are complete."}]},{"hanzi":"玩意儿","pinyin":"wán yìr","meaning":"thing (colloquial, slightly dismissive) (n.)","examples":[{"zh":"我不喜欢iPad这种玩意儿。","py":"Wǒ bù xǐ huaniPad zhè zhǒng wán yìr.","en":"I don't like gadgets like the iPad."},{"zh":"这是什么玩意儿？我从来没见过。","py":"Zhè shì shén me wán yìr? Wǒ cóng lái méi jiàn guò.","en":"What on earth is this thing? I've never seen one."}]},{"hanzi":"领教","pinyin":"lǐng jiào","meaning":"to try, to experience (v.)","examples":[{"zh":"过山车太危险，我不敢领教。","py":"Guò shān chē tài wēi xiǎn, wǒ bù gǎn lǐng jiào.","en":"Roller coasters are too dangerous; I won't try one."},{"zh":"他的脾气我早就领教过了。","py":"Tā de pí qi wǒ zǎo jiù lǐng jiào guò le.","en":"I've already experienced his temper."}]},{"hanzi":"上年纪","pinyin":"shàng nián jì","meaning":"to get old","examples":[{"zh":"我奶奶已经上了年纪，不能再乘坐刺激性的游乐设施。","py":"Wǒ nǎi nai yǐ jīng shàng le nián jì, bù néng zài chéng zuò cì jī xìng de yóu lè shè shī.","en":"My grandma is getting on; she can't ride thrill rides any more."},{"zh":"上了年纪的人要注意多休息。","py":"Shàng le nián jì de rén yào zhù yì duō xiū xi.","en":"Older people should make sure to rest more."}]},{"hanzi":"冒险","pinyin":"mào xiǎn","meaning":"to take a risk; risky","examples":[{"zh":"你这样做，有点儿太冒险了。","py":"Nǐ zhè yàng zuò, yǒu diǎnr tài mào xiǎn le.","en":"Doing it this way is a bit too risky."},{"zh":"为了救孩子，他冒险跳进了河里。","py":"Wèi le jiù hái zi, tā mào xiǎn tiào jìn le hé lǐ.","en":"To save the child, he risked jumping into the river."}]},{"hanzi":"兴奋","pinyin":"xīng fèn","meaning":"excited (adj.)","examples":[{"zh":"听说明天的课要到动物园去上，孩子们兴奋地叫起来。","py":"Tīng shuō míng tiān de kè yào dào dòng wù yuán qù shàng, hái zi men xīng fèn de jiào qǐ lái.","en":"Hearing tomorrow's class is at the zoo, the kids shouted with excitement."},{"zh":"第一次来中国，我兴奋得一晚上没睡着。","py":"Dì yī cì lái Zhōng guó, wǒ xīng fèn de yì wǎn shàng méi shuì zháo.","en":"On my first trip to China I was too excited to sleep all night."}]},{"hanzi":"神情","pinyin":"shén qíng","meaning":"expression, look (written) (n.)","examples":[{"zh":"她的神情有些忧伤。","py":"Tā de shén qíng yǒu xiē yōu shāng.","en":"She looked somewhat sad."},{"zh":"他神情紧张地走进了考场。","py":"Tā shén qíng jǐn zhāng de zǒu jìn le kǎo chǎng.","en":"He walked into the exam room looking nervous."}]},{"hanzi":"瞬间","pinyin":"shùn jiān","meaning":"instant, split second (written) (n.)","examples":[{"zh":"在我看到她的瞬间，就喜欢上了她。","py":"Zài wǒ kàn dào tā de shùn jiān, jiù xǐ huan shàng le tā.","en":"The moment I saw her, I fell for her."},{"zh":"那一瞬间，我明白了他的意思。","py":"Nà yí shùn jiān, wǒ míng bai le tā de yì si.","en":"In that instant I understood what he meant."}]},{"hanzi":"惊呼","pinyin":"jīng hū","meaning":"to cry out in alarm (v.)","examples":[{"zh":"在危险的瞬间，人们忍不住惊呼起来。","py":"Zài wēi xiǎn de shùn jiān, rén men rěn bú zhù jīng hū qǐ lái.","en":"At the moment of danger, people cried out."},{"zh":"看到这么美的风景，游客们都惊呼起来。","py":"Kàn dào zhè me měi de fēng jǐng, yóu kè men dōu jīng hū qǐ lái.","en":"Seeing such beautiful scenery, the tourists all exclaimed."}]},{"hanzi":"逛街","pinyin":"guàng jiē","meaning":"to stroll around the streets, go shopping","examples":[{"zh":"很多女孩子周末喜欢逛街。","py":"Hěn duō nǚ hái zi zhōu mò xǐ huan guàng jiē.","en":"Many girls like going shopping at weekends."},{"zh":"我不太喜欢逛街，更喜欢在网上买东西。","py":"Wǒ bú tài xǐ huan guàng jiē, gèng xǐ huan zài wǎng shàng mǎi dōng xi.","en":"I don't like going shopping much; I prefer buying online."}]},{"hanzi":"松柏","pinyin":"sōng bǎi","meaning":"pine and cypress (n.)","examples":[{"zh":"公园里的松柏一年四季都是绿的。","py":"Gōng yuán lǐ de sōng bǎi yì nián sì jì dōu shì lǜ de.","en":"The pines and cypresses in the park stay green all year."},{"zh":"松柏常常是坚强的象征。","py":"Sōng bǎi cháng cháng shì jiān qiáng de xiàng zhēng.","en":"Pines and cypresses often symbolise resilience."}]},{"hanzi":"度假","pinyin":"dù jià","meaning":"to take a holiday","examples":[{"zh":"你今年夏天打算到哪里度假？","py":"Nǐ jīn nián xià tiān dǎ suàn dào nǎ lǐ dù jià?","en":"Where are you planning to holiday this summer?"},{"zh":"他们全家去海南度假了。","py":"Tā men quán jiā qù Hǎi nán dù jià le.","en":"The whole family went on holiday to Hainan."}]},{"hanzi":"沙滩","pinyin":"shā tān","meaning":"sand beach (n.)","examples":[{"zh":"孩子们在沙滩上堆沙子玩儿。","py":"Hái zi men zài shā tān shàng duī shā zi wánr.","en":"The kids are building sandcastles on the beach."},{"zh":"我们躺在沙滩上晒太阳。","py":"Wǒ men tǎng zài shā tān shàng shài tài yáng.","en":"We lay on the beach sunbathing."}]},{"hanzi":"礁石","pinyin":"jiāo shí","meaning":"reef rock (n.)","examples":[{"zh":"海浪不停地拍打着礁石。","py":"Hǎi làng bù tíng de pāi dǎ zhe jiāo shí.","en":"The waves keep beating against the rocks."},{"zh":"海边的礁石很滑，要小心。","py":"Hǎi biān de jiāo shí hěn huá, yào xiǎo xīn.","en":"The rocks by the sea are slippery; be careful."}]},{"hanzi":"点缀","pinyin":"diǎn zhuì","meaning":"to decorate, to dot (v.)","examples":[{"zh":"几间小红房子点缀在绿树林中。","py":"Jǐ jiān xiǎo hóng fáng zi diǎn zhuì zài lǜ shù lín zhōng.","en":"A few little red houses dot the green woods."},{"zh":"白色的小花点缀在绿草地上。","py":"Bái sè de xiǎo huā diǎn zhuì zài lǜ cǎo dì shàng.","en":"Little white flowers dot the green grass."}]},{"hanzi":"喧嚣","pinyin":"xuān xiāo","meaning":"noisy (written) (adj.)","examples":[{"zh":"和喧嚣的城市相比，我更喜欢宁静的乡村。","py":"Hé xuān xiāo de chéng shì xiāng bǐ, wǒ gèng xǐ huan níng jìng de xiāng cūn.","en":"Compared to the noisy city, I prefer the quiet countryside."},{"zh":"他想离开喧嚣的城市，到乡下住一段时间。","py":"Tā xiǎng lí kāi xuān xiāo de chéng shì, dào xiāng xià zhù yí duàn shí jiān.","en":"He wants to leave the noisy city and live in the countryside for a while."}]},{"hanzi":"节奏","pinyin":"jié zòu","meaning":"rhythm, pace (n.)","examples":[{"zh":"大城市的生活节奏很快。","py":"Dà chéng shì de shēng huó jié zòu hěn kuài.","en":"Life in big cities moves fast."},{"zh":"这首歌的节奏很快。","py":"Zhè shǒu gē de jié zòu hěn kuài.","en":"This song has a fast rhythm."}]},{"hanzi":"亲近","pinyin":"qīn jìn","meaning":"to get close to (v.); close (adj.)","examples":[{"zh":"这次郊游，给了我们一个亲近大自然的机会。","py":"Zhè cì jiāo yóu, gěi le wǒ men yí gè qīn jìn dà zì rán de jī huì.","en":"This outing gave us a chance to get close to nature."},{"zh":"这只小狗很喜欢亲近人。","py":"Zhè zhǐ xiǎo gǒu hěn xǐ huan qīn jìn rén.","en":"This puppy loves being close to people."}]},{"hanzi":"片刻","pinyin":"piàn kè","meaning":"a moment (written) (n.)","examples":[{"zh":"请您稍等片刻，我让他来听电话。","py":"Qǐng nín shāo děng piàn kè, wǒ ràng tā lái tīng diàn huà.","en":"Please wait a moment; I'll get him on the phone."},{"zh":"他沉默了片刻，然后说：“好吧。”","py":"Tā chén mò le piàn kè, rán hòu shuō: \"Hǎo ba.\"","en":"He was silent for a moment, then said, 'All right.'"}]},{"hanzi":"宁静","pinyin":"níng jìng","meaning":"tranquil (adj.)","examples":[{"zh":"不管环境多么喧嚣，也不能扰乱我内心的宁静。","py":"Bù guǎn huán jìng duō me xuān xiāo, yě bù néng rǎo luàn wǒ nèi xīn de níng jìng.","en":"However noisy it is around me, it can't disturb my inner calm."},{"zh":"清晨的湖边非常宁静。","py":"Qīng chén de hú biān fēi cháng níng jìng.","en":"The lakeside is very peaceful in the early morning."}]},{"hanzi":"清闲","pinyin":"qīng xián","meaning":"having plenty of leisure (adj.)","examples":[{"zh":"退休后，她不再忙碌，生活很清闲。","py":"Tuì xiū hòu, tā bú zài máng lù, shēng huó hěn qīng xián.","en":"After retiring she's no longer busy and lives at leisure."},{"zh":"这份工作很清闲，每天四点就下班了。","py":"Zhè fèn gōng zuò hěn qīng xián, měi tiān sì diǎn jiù xià bān le.","en":"This job is easy-going; you finish at four every day."}]},{"hanzi":"俗话","pinyin":"sú huà","meaning":"common saying, proverb (n.)","examples":[{"zh":"俗话说“失败是成功之母”。","py":"Sú huà shuō \"Shī bài shì chéng gōng zhī mǔ\".","en":"As the saying goes, failure is the mother of success."},{"zh":"俗话说：“百闻不如一见。”","py":"Sú huà shuō: \"Bǎi wén bù rú yí jiàn.\"","en":"As the saying goes, 'Seeing once is better than hearing a hundred times.'"}]},{"hanzi":"古典","pinyin":"gǔ diǎn","meaning":"classic, classical (adj.)","examples":[{"zh":"我很喜欢古典音乐。","py":"Wǒ hěn xǐ huan gǔ diǎn yīn yuè.","en":"I really like classical music."},{"zh":"这座园林是中国古典建筑的代表。","py":"Zhè zuò yuán lín shì Zhōng guó gǔ diǎn jiàn zhù de dài biǎo.","en":"This garden is a classic example of traditional Chinese architecture."}]},{"hanzi":"乔木","pinyin":"qiáo mù","meaning":"tall tree (n.)","examples":[{"zh":"公园里种了很多高大的乔木。","py":"Gōng yuán lǐ zhòng le hěn duō gāo dà de qiáo mù.","en":"Lots of tall trees are planted in the park."},{"zh":"乔木一般有明显的主干，比灌木高。","py":"Qiáo mù yì bān yǒu míng xiǎn de zhǔ gàn, bǐ guàn mù gāo.","en":"Trees usually have a clear trunk and are taller than shrubs."}]},{"hanzi":"搭话","pinyin":"dā huà","meaning":"to strike up a conversation","examples":[{"zh":"我们正讨论问题，司机突然在前面搭话。","py":"Wǒ men zhèng tǎo lùn wèn tí, sī jī tū rán zài qián miàn dā huà.","en":"We were discussing something when the driver suddenly chimed in."},{"zh":"坐火车的时候，旁边的人跟我搭话。","py":"Zuò huǒ chē de shí hou, páng biān de rén gēn wǒ dā huà.","en":"On the train, the person next to me struck up a conversation."}]},{"type":"grammar","point":"由于……所以……","sentence":"__市中心地价很贵，__很多人选择在郊区买房。","answer":"由于|所以","pinyin":"Yóu yú shì zhōng xīn dì jià hěn guì, suǒ yǐ hěn duō rén xuǎn zé zài jiāo qū mǎi fáng.","meaning":"Because land downtown is expensive, many people buy homes in the suburbs.","note":"Cause and effect, more formal than 因为……所以……. 所以 can be left out.","examples":[{"zh":"由于天气不好，所以足球赛取消了。","py":"Yóu yú tiān qì bù hǎo, suǒ yǐ zú qiú sài qǔ xiāo le.","en":"Because of bad weather, the football match was cancelled."},{"zh":"由于他平时很努力，所以考试成绩很好。","py":"Yóu yú tā píng shí hěn nǔ lì, suǒ yǐ kǎo shì chéng jì hěn hǎo.","en":"Because he always works hard, his exam results are good."},{"zh":"由于飞机晚点，所以我们没赶上会议。","py":"Yóu yú fēi jī wǎn diǎn, suǒ yǐ wǒ men méi gǎn shàng huì yì.","en":"Because the flight was late, we missed the meeting."}]},{"type":"grammar","point":"由于……所以……","sentence":"__天气不好，__足球赛取消了。","answer":"由于|所以","pinyin":"Yóu yú tiān qì bù hǎo, suǒ yǐ zú qiú sài qǔ xiāo le.","meaning":"Because of bad weather, the football match was cancelled.","note":"由于 + cause, 所以 + result. Written style.","examples":[{"zh":"由于市中心地价很贵，所以很多人选择在郊区买房。","py":"Yóu yú shì zhōng xīn dì jià hěn guì, suǒ yǐ hěn duō rén xuǎn zé zài jiāo qū mǎi fáng.","en":"Because land downtown is expensive, many people buy homes in the suburbs."},{"zh":"由于他平时很努力，所以考试成绩很好。","py":"Yóu yú tā píng shí hěn nǔ lì, suǒ yǐ kǎo shì chéng jì hěn hǎo.","en":"Because he always works hard, his exam results are good."},{"zh":"由于飞机晚点，所以我们没赶上会议。","py":"Yóu yú fēi jī wǎn diǎn, suǒ yǐ wǒ men méi gǎn shàng huì yì.","en":"Because the flight was late, we missed the meeting."}]},{"type":"grammar","point":"在……(的)程度上","sentence":"国家增加了节假日，这在一定__上刺激了旅游经济的发展。","answer":"程度","pinyin":"Guó jiā zēng jiā le jié jià rì, zhè zài yí dìng chéng dù shàng cì jī le lǚ yóu jīng jì de fā zhǎn.","meaning":"The state added public holidays, which to some extent boosted tourism.","note":"在某种/一定程度上 = to some extent; 在很大程度上 = to a large extent. Mostly written.","examples":[{"zh":"专家认为，能否学好外语在很大程度上取决于学习者的学习方法。","py":"Zhuān jiā rèn wéi, néng fǒu xué hǎo wài yǔ zài hěn dà chéng dù shàng qǔ jué yú xué xí zhě de xué xí fāng fǎ.","en":"Experts believe that learning a language well depends largely on the learner's method."},{"zh":"这本书在很大程度上改变了我的想法。","py":"Zhè běn shū zài hěn dà chéng dù shàng gǎi biàn le wǒ de xiǎng fǎ.","en":"This book largely changed how I think."},{"zh":"网络在某种程度上改变了人们的交流方式。","py":"Wǎng luò zài mǒu zhǒng chéng dù shàng gǎi biàn le rén men de jiāo liú fāng shì.","en":"The internet has, to some extent, changed how people communicate."}]},{"type":"grammar","point":"在……(的)程度上","sentence":"专家认为，能否学好外语在很大__上取决于学习者的学习方法。","answer":"程度","pinyin":"Zhuān jiā rèn wéi, néng fǒu xué hǎo wài yǔ zài hěn dà chéng dù shàng qǔ jué yú xué xí zhě de xué xí fāng fǎ.","meaning":"Experts believe that learning a language well depends largely on the learner's method.","note":"在很大程度上 = to a large extent.","examples":[{"zh":"国家增加了节假日，这在一定程度上刺激了旅游经济的发展。","py":"Guó jiā zēng jiā le jié jià rì, zhè zài yí dìng chéng dù shàng cì jī le lǚ yóu jīng jì de fā zhǎn.","en":"The state added public holidays, which to some extent boosted tourism."},{"zh":"这本书在很大程度上改变了我的想法。","py":"Zhè běn shū zài hěn dà chéng dù shàng gǎi biàn le wǒ de xiǎng fǎ.","en":"This book largely changed how I think."},{"zh":"网络在某种程度上改变了人们的交流方式。","py":"Wǎng luò zài mǒu zhǒng chéng dù shàng gǎi biàn le rén men de jiāo liú fāng shì.","en":"The internet has, to some extent, changed how people communicate."}]},{"type":"grammar","point":"一来……二来……","sentence":"今年夏天，我打算去东北度假，__想过个凉爽的夏天，__想顺便参观几个农场。","answer":"一来|二来","pinyin":"Jīn nián xià tiān, wǒ dǎ suàn qù Dōng běi dù jià, yì lái xiǎng guò gè liáng shuǎng de xià tiān, èr lái xiǎng shùn biàn cān guān jǐ gè nóng chǎng.","meaning":"This summer I'll holiday in the northeast: first for a cool summer, second to visit some farms.","note":"Gives two reasons for doing something. Mostly spoken.","examples":[{"zh":"昨天我没有去看电影，一来是准备考试没有时间，二来是对武打片不感兴趣。","py":"Zuó tiān wǒ méi yǒu qù kàn diàn yǐng, yì lái shì zhǔn bèi kǎo shì méi yǒu shí jiān, èr lái shì duì wǔ dǎ piàn bù gǎn xìng qù.","en":"I didn't go to the film yesterday: for one, no time with exams; for another, I don't like action films."},{"zh":"我喜欢住在学校里，一来上课方便，二来可以多认识朋友。","py":"Wǒ xǐ huan zhù zài xué xiào lǐ, yì lái shàng kè fāng biàn, èr lái kě yǐ duō rèn shi péng you.","en":"I like living on campus: first, it's close to class; second, I meet more friends."},{"zh":"我每天走路上班，一来锻炼身体，二来可以省钱。","py":"Wǒ měi tiān zǒu lù shàng bān, yì lái duàn liàn shēn tǐ, èr lái kě yǐ shěng qián.","en":"I walk to work every day, partly for exercise, partly to save money."}]},{"type":"grammar","point":"一来……二来……","sentence":"昨天我没有去看电影，__是准备考试没有时间，__是对武打片不感兴趣。","answer":"一来|二来","pinyin":"Zuó tiān wǒ méi yǒu qù kàn diàn yǐng, yì lái shì zhǔn bèi kǎo shì méi yǒu shí jiān, èr lái shì duì wǔ dǎ piàn bù gǎn xìng qù.","meaning":"I didn't go to the film yesterday: for one, no time with exams; for another, I don't like action films.","note":"一来……二来……: first reason, second reason.","examples":[{"zh":"今年夏天，我打算去东北度假，一来想过个凉爽的夏天，二来想顺便参观几个农场。","py":"Jīn nián xià tiān, wǒ dǎ suàn qù Dōng běi dù jià, yì lái xiǎng guò gè liáng shuǎng de xià tiān, èr lái xiǎng shùn biàn cān guān jǐ gè nóng chǎng.","en":"This summer I'll holiday in the northeast: first for a cool summer, second to visit some farms."},{"zh":"我喜欢住在学校里，一来上课方便，二来可以多认识朋友。","py":"Wǒ xǐ huan zhù zài xué xiào lǐ, yì lái shàng kè fāng biàn, èr lái kě yǐ duō rèn shi péng you.","en":"I like living on campus: first, it's close to class; second, I meet more friends."},{"zh":"我每天走路上班，一来锻炼身体，二来可以省钱。","py":"Wǒ měi tiān zǒu lù shàng bān, yì lái duàn liàn shēn tǐ, èr lái kě yǐ shěng qián.","en":"I walk to work every day, partly for exercise, partly to save money."}]},{"type":"grammar","point":"不过……罢了","sentence":"她找了一大堆借口说没有时间，其实__是不愿意跟你一起吃饭__。","answer":"不过|罢了","pinyin":"Tā zhǎo le yí dà duī jiè kǒu shuō méi yǒu shí jiān, qí shí bú guò shì bú yuàn yì gēn nǐ yì qǐ chī fàn bà le.","meaning":"She made lots of excuses, but really she just doesn't want to eat with you.","note":"不过 (= 只是) … 罢了: it's merely…, nothing more serious.","examples":[{"zh":"他们不过是吵架说气话罢了，哪里会真离婚。","py":"Tā men bú guò shì chǎo jià shuō qì huà bà le, nǎ lǐ huì zhēn lí hūn.","en":"They're just saying things in anger; they won't really divorce."},{"zh":"我不过随便问问罢了，你别多想。","py":"Wǒ bú guò suí biàn wèn wèn bà le, nǐ bié duō xiǎng.","en":"I was only asking casually; don't overthink it."},{"zh":"这不过是个小问题罢了，很快就能解决。","py":"Zhè bú guò shì gè xiǎo wèn tí bà le, hěn kuài jiù néng jiě jué.","en":"It's only a small problem and can be fixed quickly."}]},{"type":"grammar","point":"不过……罢了","sentence":"他们__是吵架说气话__，哪里会真离婚。","answer":"不过|罢了","pinyin":"Tā men bú guò shì chǎo jià shuō qì huà bà le, nǎ lǐ huì zhēn lí hūn.","meaning":"They're just saying things in anger; they won't really divorce.","note":"不过……罢了 downplays the situation: only…","examples":[{"zh":"她找了一大堆借口说没有时间，其实不过是不愿意跟你一起吃饭罢了。","py":"Tā zhǎo le yí dà duī jiè kǒu shuō méi yǒu shí jiān, qí shí bú guò shì bú yuàn yì gēn nǐ yì qǐ chī fàn bà le.","en":"She made lots of excuses, but really she just doesn't want to eat with you."},{"zh":"我不过随便问问罢了，你别多想。","py":"Wǒ bú guò suí biàn wèn wèn bà le, nǐ bié duō xiǎng.","en":"I was only asking casually; don't overthink it."},{"zh":"这不过是个小问题罢了，很快就能解决。","py":"Zhè bú guò shì gè xiǎo wèn tí bà le, hěn kuài jiù néng jiě jué.","en":"It's only a small problem and can be fixed quickly."}]},{"type":"grammar","point":"……，以……","sentence":"这个学期我选了一门写作课，__提高我的汉语写作水平。","answer":"以","pinyin":"Zhè ge xué qī wǒ xuǎn le yì mén xiě zuò kè, yǐ tí gāo wǒ de Hàn yǔ xiě zuò shuǐ píng.","meaning":"This term I took a writing class to improve my Chinese writing.","note":"以 (conj.) introduces the purpose of the previous clause. Written style.","examples":[{"zh":"这个城市的中小学将引进外地教师，以解决本地教师缺乏的问题。","py":"Zhè ge chéng shì de zhōng xiǎo xué jiāng yǐn jìn wài dì jiào shī, yǐ jiě jué běn dì jiào shī quē fá de wèn tí.","en":"Schools here will hire teachers from elsewhere to solve the local shortage."},{"zh":"我们应该节约用水，以保护水资源。","py":"Wǒ men yīng gāi jié yuē yòng shuǐ, yǐ bǎo hù shuǐ zī yuán.","en":"We should save water in order to protect water resources."},{"zh":"他每天早上跑步，以保持身体健康。","py":"Tā měi tiān zǎo shàng pǎo bù, yǐ bǎo chí shēn tǐ jiàn kāng.","en":"He runs every morning to stay healthy."}]},{"type":"grammar","point":"……，以……","sentence":"这个城市的中小学将引进外地教师，__解决本地教师缺乏的问题。","answer":"以","pinyin":"Zhè ge chéng shì de zhōng xiǎo xué jiāng yǐn jìn wài dì jiào shī, yǐ jiě jué běn dì jiào shī quē fá de wèn tí.","meaning":"Schools here will hire teachers from elsewhere to solve the local shortage.","note":"……，以 + purpose. Written style.","examples":[{"zh":"这个学期我选了一门写作课，以提高我的汉语写作水平。","py":"Zhè ge xué qī wǒ xuǎn le yì mén xiě zuò kè, yǐ tí gāo wǒ de Hàn yǔ xiě zuò shuǐ píng.","en":"This term I took a writing class to improve my Chinese writing."},{"zh":"我们应该节约用水，以保护水资源。","py":"Wǒ men yīng gāi jié yuē yòng shuǐ, yǐ bǎo hù shuǐ zī yuán.","en":"We should save water in order to protect water resources."},{"zh":"他每天早上跑步，以保持身体健康。","py":"Tā měi tiān zǎo shàng pǎo bù, yǐ bǎo chí shēn tǐ jiàn kāng.","en":"He runs every morning to stay healthy."}]},{"type":"grammar","point":"……成其为……","sentence":"拥有传统文化和古老建筑，北京才能__北京。","answer":"成其为","pinyin":"Yōng yǒu chuán tǒng wén huà hé gǔ lǎo jiàn zhù, Běi jīng cái néng chéng qí wéi Běi jīng.","meaning":"Only with its traditional culture and old buildings can Beijing truly be Beijing.","note":"Something truly deserves its name only when it has a special quality. Also written 称其为.","examples":[{"zh":"他说：“不会喝酒，就不成其为北方人。”","py":"Tā shuō: \"Bú huì hē jiǔ, jiù bù chéng qí wéi běi fāng rén.\"","en":"He said, 'If you can't drink, you're not a real northerner.'"},{"zh":"没有饺子的春节，就不成其为春节。","py":"Méi yǒu jiǎo zi de Chūn jié, jiù bù chéng qí wéi Chūn jié.","en":"Spring Festival without dumplings isn't really Spring Festival."},{"zh":"没有观众的比赛，还能成其为比赛吗？","py":"Méi yǒu guān zhòng de bǐ sài, hái néng chéng qí wéi bǐ sài ma?","en":"Can a match without spectators still be called a match?"}]},{"type":"grammar","point":"……成其为……","sentence":"他说：“不会喝酒，就不__北方人。”","answer":"成其为","pinyin":"Tā shuō: \"Bú huì hē jiǔ, jiù bù chéng qí wéi běi fāng rén.\"","meaning":"He said, 'If you can't drink, you're not a real northerner.'","note":"不成其为 + name: doesn't deserve to be called…","examples":[{"zh":"拥有传统文化和古老建筑，北京才能成其为北京。","py":"Yōng yǒu chuán tǒng wén huà hé gǔ lǎo jiàn zhù, Běi jīng cái néng chéng qí wéi Běi jīng.","en":"Only with its traditional culture and old buildings can Beijing truly be Beijing."},{"zh":"没有饺子的春节，就不成其为春节。","py":"Méi yǒu jiǎo zi de Chūn jié, jiù bù chéng qí wéi Chūn jié.","en":"Spring Festival without dumplings isn't really Spring Festival."},{"zh":"没有观众的比赛，还能成其为比赛吗？","py":"Méi yǒu guān zhòng de bǐ sài, hái néng chéng qí wéi bǐ sài ma?","en":"Can a match without spectators still be called a match?"}]}]},{"deck":"第4课 世纪遗产清单","cards":[{"hanzi":"遗产","pinyin":"yí chǎn","meaning":"legacy, heritage, inheritance (n.)","examples":[{"zh":"他继承了父亲的遗产。","py":"Tā jì chéng le fù qīn de yí chǎn.","en":"He inherited his father's estate."},{"zh":"长城是世界文化遗产。","py":"Cháng chéng shì shì jiè wén huà yí chǎn.","en":"The Great Wall is a World Cultural Heritage site."}]},{"hanzi":"清单","pinyin":"qīng dān","meaning":"detailed list (n.)","examples":[{"zh":"请你把箱子里所有的东西列一份清单。","py":"Qǐng nǐ bǎ xiāng zi lǐ suǒ yǒu de dōng xi liè yí fèn qīng dān.","en":"Please make a list of everything in the box."},{"zh":"去超市以前，我先列了一张购物清单。","py":"Qù chāo shì yǐ qián, wǒ xiān liè le yì zhāng gòu wù qīng dān.","en":"Before going to the supermarket, I made a shopping list."}]},{"hanzi":"清点","pinyin":"qīng diǎn","meaning":"to check, to take inventory (v.)","examples":[{"zh":"你好好清点一下，看是不是所有明天该带的东西都准备好了。","py":"Nǐ hǎo hǎo qīng diǎn yí xià, kàn shì bú shì suǒ yǒu míng tiān gāi dài de dōng xi dōu zhǔn bèi hǎo le.","en":"Check carefully that everything for tomorrow is ready."},{"zh":"下班前，店员要清点一下今天的现金。","py":"Xià bān qián, diàn yuán yào qīng diǎn yí xià jīn tiān de xiàn jīn.","en":"Before closing, the staff count today's cash."}]},{"hanzi":"即将","pinyin":"jí jiāng","meaning":"about to, on the point of (written) (adv.)","examples":[{"zh":"明年我即将毕业，现在正在准备论文。","py":"Míng nián wǒ jí jiāng bì yè, xiàn zài zhèng zài zhǔn bèi lùn wén.","en":"I graduate next year and am preparing my thesis."},{"zh":"飞机即将起飞，请大家系好安全带。","py":"Fēi jī jí jiāng qǐ fēi, qǐng dà jiā jì hǎo ān quán dài.","en":"The plane is about to take off; please fasten your seatbelts."}]},{"hanzi":"列","pinyin":"liè","meaning":"to list, to line up (v.)","usage":"列一份清单 (draw up a list)","examples":[{"zh":"请把你的问题一条一条列出来。","py":"Qǐng bǎ nǐ de wèn tí yì tiáo yì tiáo liè chū lái.","en":"Please list your questions one by one."},{"zh":"我把要做的事情都列在了本子上。","py":"Wǒ bǎ yào zuò de shì qing dōu liè zài le běn zi shàng.","en":"I listed everything I need to do in my notebook."}]},{"hanzi":"功劳","pinyin":"gōng láo","meaning":"merit, contribution (n.)","examples":[{"zh":"试验成功，功劳并不是我一个人的，而是大家的。","py":"Shì yàn chéng gōng, gōng láo bìng bú shì wǒ yí gè rén de, ér shì dà jiā de.","en":"The success isn't mine alone; credit goes to everyone."},{"zh":"公司能有今天，他的功劳最大。","py":"Gōng sī néng yǒu jīn tiān, tā de gōng láo zuì dà.","en":"He deserves the most credit for where the company is today."}]},{"hanzi":"黄昏","pinyin":"huáng hūn","meaning":"dusk, evenfall (written) (n.)","examples":[{"zh":"黄昏时，我喜欢一个人在湖边散步。","py":"Huáng hūn shí, wǒ xǐ huan yí gè rén zài hú biān sàn bù.","en":"At dusk I like walking alone by the lake."},{"zh":"黄昏的时候，海边的景色特别美。","py":"Huáng hūn de shí hou, hǎi biān de jǐng sè tè bié měi.","en":"The seaside is especially beautiful at dusk."}]},{"hanzi":"尸骨","pinyin":"shī gǔ","meaning":"skeleton of a corpse (written) (n.)","usage":"一具尸骨 (a skeleton)","examples":[{"zh":"考古学家在这里发现了一具古代的尸骨。","py":"Kǎo gǔ xué jiā zài zhè lǐ fā xiàn le yí jù gǔ dài de shī gǔ.","en":"Archaeologists found an ancient skeleton here."},{"zh":"战争结束后，很多士兵的尸骨留在了异国他乡。","py":"Zhàn zhēng jié shù hòu, hěn duō shì bīng de shī gǔ liú zài le yì guó tā xiāng.","en":"After the war, many soldiers' remains stayed in foreign lands."}]},{"hanzi":"财富","pinyin":"cái fù","meaning":"wealth, riches (n.)","usage":"精神财富 (spiritual wealth)","examples":[{"zh":"健康是人生最大的财富。","py":"Jiàn kāng shì rén shēng zuì dà de cái fù.","en":"Health is life's greatest wealth."},{"zh":"知识也是一种财富。","py":"Zhī shí yě shì yì zhǒng cái fù.","en":"Knowledge is also a kind of wealth."}]},{"hanzi":"无辜","pinyin":"wú gū","meaning":"innocent (adj.)","examples":[{"zh":"你不要因为和太太吵架就对孩子发火，孩子是无辜的。","py":"Nǐ bú yào yīn wèi hé tài tài chǎo jià jiù duì hái zi fā huǒ, hái zi shì wú gū de.","en":"Don't take your quarrel out on the kids; they're innocent."},{"zh":"战争中受苦最多的往往是无辜的平民。","py":"Zhàn zhēng zhōng shòu kǔ zuì duō de wǎng wǎng shì wú gū de píng mín.","en":"Those who suffer most in war are often innocent civilians."}]},{"hanzi":"掩埋","pinyin":"yǎn mái","meaning":"to bury (written) (v.)","examples":[{"zh":"掩埋掉心爱的狗以后，她忍不住哭了起来。","py":"Yǎn mái diào xīn ài de gǒu yǐ hòu, tā rěn bú zhù kū le qǐ lái.","en":"After burying her beloved dog, she couldn't help crying."},{"zh":"地震以后，很多房子被掩埋在废墟下。","py":"Dì zhèn yǐ hòu, hěn duō fáng zi bèi yǎn mái zài fèi xū xià.","en":"After the earthquake, many houses were buried under rubble."}]},{"hanzi":"哭泣","pinyin":"kū qì","meaning":"to weep, to cry (written) (v.)","examples":[{"zh":"别再为过去的事情哭泣了！","py":"Bié zài wèi guò qù de shì qing kū qì le!","en":"Stop crying over the past!"},{"zh":"她一个人躲在房间里哭泣。","py":"Tā yí gè rén duǒ zài fáng jiān lǐ kū qì.","en":"She hid alone in her room, crying."}]},{"hanzi":"孤独","pinyin":"gū dú","meaning":"isolated, lonely (adj.)","examples":[{"zh":"我刚出国时，一个朋友都没有，觉得很孤独。","py":"Wǒ gāng chū guó shí, yí gè péng you dōu méi yǒu, jué de hěn gū dú.","en":"When I first went abroad I had no friends and felt lonely."},{"zh":"老人一个人住，常常感到孤独。","py":"Lǎo rén yí gè rén zhù, cháng cháng gǎn dào gū dú.","en":"The old man lives alone and often feels lonely."}]},{"hanzi":"寂寞","pinyin":"jì mò","meaning":"lonesome, lonely (inner feeling) (adj.)","examples":[{"zh":"因为刚刚和女友分手，他心里还是感到非常寂寞。","py":"Yīn wèi gāng gāng hé nǚ yǒu fēn shǒu, tā xīn lǐ hái shì gǎn dào fēi cháng jì mò.","en":"Having just broken up, he still felt very lonely inside."},{"zh":"周末一个人在家，觉得有点儿寂寞。","py":"Zhōu mò yí gè rén zài jiā, jué de yǒu diǎnr jì mò.","en":"Home alone at the weekend, I feel a bit lonely."}]},{"hanzi":"核弹头","pinyin":"hé dàn tóu","meaning":"nuclear warhead (n.)","usage":"核武器 核电站 (nuclear weapons, nuclear power station)","examples":[{"zh":"两国同意减少核弹头的数量。","py":"Liǎng guó tóng yì jiǎn shǎo hé dàn tóu de shù liàng.","en":"The two countries agreed to reduce their nuclear warheads."},{"zh":"一枚核弹头就能毁灭一座城市。","py":"Yì méi hé dàn tóu jiù néng huǐ miè yí zuò chéng shì.","en":"A single nuclear warhead can destroy a city."}]},{"hanzi":"毁灭","pinyin":"huǐ miè","meaning":"to destroy, to annihilate (v.)","examples":[{"zh":"破坏环境等于毁灭人类自己。","py":"Pò huài huán jìng děng yú huǐ miè rén lèi zì jǐ.","en":"Destroying the environment means destroying ourselves."},{"zh":"一场大火毁灭了整个村子。","py":"Yì cháng dà huǒ huǐ miè le zhěng gè cūn zi.","en":"A huge fire destroyed the whole village."}]},{"hanzi":"爆炸","pinyin":"bào zhà","meaning":"to explode, to blow up (v.)","usage":"人口爆炸 知识爆炸 (population explosion, knowledge explosion)","examples":[{"zh":"昨天工厂发生了爆炸，幸好没有人受伤。","py":"Zuó tiān gōng chǎng fā shēng le bào zhà, xìng hǎo méi yǒu rén shòu shāng.","en":"There was an explosion at the factory yesterday; luckily nobody was hurt."},{"zh":"现在是信息爆炸的时代。","py":"Xiàn zài shì xìn xī bào zhà de shí dài.","en":"We live in an age of information explosion."}]},{"hanzi":"大开眼界","pinyin":"dà kāi yǎn jiè","meaning":"to widen one's horizons","usage":"让人大开眼界 (eye-opening)","examples":[{"zh":"这次去博物馆参观，让我大开眼界。","py":"Zhè cì qù bó wù guǎn cān guān, ràng wǒ dà kāi yǎn jiè.","en":"This museum visit really opened my eyes."},{"zh":"第一次出国旅行，他大开眼界。","py":"Dì yī cì chū guó lǚ xíng, tā dà kāi yǎn jiè.","en":"His first trip abroad broadened his horizons."}]},{"hanzi":"欢呼","pinyin":"huān hū","meaning":"to cheer, to acclaim (v.)","examples":[{"zh":"听到战争结束的消息，人们都欢呼起来。","py":"Tīng dào zhàn zhēng jié shù de xiāo xi, rén men dōu huān hū qǐ lái.","en":"Hearing the war was over, people cheered."},{"zh":"球进了，球迷们大声欢呼。","py":"Qiú jìn le, qiú mí men dà shēng huān hū.","en":"Goal! The fans cheered loudly."}]},{"hanzi":"公顷","pinyin":"gōng qǐng","meaning":"hectare (measure word)","examples":[{"zh":"这个农场有五百公顷。","py":"Zhè ge nóng chǎng yǒu wǔ bǎi gōng qǐng.","en":"This farm covers 500 hectares."},{"zh":"一公顷等于一万平方米。","py":"Yì gōng qǐng děng yú yí wàn píng fāng mǐ.","en":"One hectare equals 10,000 square metres."}]},{"hanzi":"沙漠","pinyin":"shā mò","meaning":"desert (n.)","examples":[{"zh":"骆驼被称为“沙漠之舟”。","py":"Luò tuo bèi chēng wéi \"Shā mò zhī zhōu\".","en":"Camels are called 'ships of the desert'."},{"zh":"沙漠里白天很热，晚上很冷。","py":"Shā mò lǐ bái tiān hěn rè, wǎn shàng hěn lěng.","en":"In the desert it's hot by day and cold at night."}]},{"hanzi":"不动产","pinyin":"bú dòng chǎn","meaning":"immovable property, real estate (n.)","examples":[{"zh":"房子和土地都属于不动产。","py":"Fáng zi hé tǔ dì dōu shǔ yú bú dòng chǎn.","en":"Houses and land are both real estate."},{"zh":"他把所有的不动产都留给了儿子。","py":"Tā bǎ suǒ yǒu de bú dòng chǎn dōu liú gěi le ér zi.","en":"He left all his property to his son."}]},{"hanzi":"细雨绵绵","pinyin":"xì yǔ mián mián","meaning":"continuous drizzle","examples":[{"zh":"我很不习惯南方细雨绵绵的天气。","py":"Wǒ hěn bù xí guàn nán fāng xì yǔ mián mián de tiān qì.","en":"I'm not used to the endless drizzle in the south."},{"zh":"春天的江南常常细雨绵绵。","py":"Chūn tiān de Jiāng nán cháng cháng xì yǔ mián mián.","en":"In spring, the Jiangnan region often has endless drizzle."}]},{"hanzi":"海市蜃楼","pinyin":"hǎi shì shèn lóu","meaning":"mirage; illusion","examples":[{"zh":"在那位哲学家看来，人生只是美丽的海市蜃楼。","py":"Zài nà wèi zhé xué jiā kàn lái, rén shēng zhǐ shì měi lì de hǎi shì shèn lóu.","en":"To that philosopher, life is just a beautiful mirage."},{"zh":"他的计划听起来很美，其实只是海市蜃楼。","py":"Tā de jì huà tīng qǐ lái hěn měi, qí shí zhǐ shì hǎi shì shèn lóu.","en":"His plan sounds great but it's really just a mirage."}]},{"hanzi":"驼铃","pinyin":"tuó líng","meaning":"camel bell (n.)","examples":[{"zh":"远处传来了丁当的驼铃声。","py":"Yuǎn chù chuán lái le dīng dāng de tuó líng shēng.","en":"The jingle of camel bells came from far away."},{"zh":"听到驼铃声，我们知道商队快到了。","py":"Tīng dào tuó líng shēng, wǒ men zhī dao shāng duì kuài dào le.","en":"Hearing the camel bells, we knew the caravan was nearly here."}]},{"hanzi":"丁当","pinyin":"dīng dāng","meaning":"clank, jingle (onomatopoeia)","examples":[{"zh":"风一吹，门上的铃铛就丁当作响。","py":"Fēng yì chuī, mén shàng de líng dang jiù dīng dāng zuò xiǎng.","en":"When the wind blows, the bell on the door jingles."},{"zh":"她手上的手镯丁当丁当地响。","py":"Tā shǒu shàng de shǒu zhuó dīng dāng dīng dāng de xiǎng.","en":"Her bracelets clinked on her wrist."}]},{"hanzi":"视野","pinyin":"shì yě","meaning":"field of vision, horizon (n.)","examples":[{"zh":"这本书开阔了我的视野。","py":"Zhè běn shū kāi kuò le wǒ de shì yě.","en":"This book broadened my horizons."},{"zh":"站在山顶上，视野非常开阔。","py":"Zhàn zài shān dǐng shàng, shì yě fēi cháng kāi kuò.","en":"Standing on the mountaintop, the view is wide open."}]},{"hanzi":"污染","pinyin":"wū rǎn","meaning":"to pollute, to contaminate (v.)","examples":[{"zh":"这条河受到了严重的污染。","py":"Zhè tiáo hé shòu dào le yán zhòng de wū rǎn.","en":"This river has been badly polluted."},{"zh":"过度发展的汽车工业造成了严重的空气污染。","py":"Guò dù fā zhǎn de qì chē gōng yè zào chéng le yán zhòng de kōng qì wū rǎn.","en":"Overdeveloped car industry has caused serious air pollution."}]},{"hanzi":"捕鱼","pinyin":"bǔ yú","meaning":"to fish (with nets)","examples":[{"zh":"他的父亲以捕鱼为生。","py":"Tā de fù qīn yǐ bǔ yú wéi shēng.","en":"His father makes a living fishing."},{"zh":"这个季节禁止在湖里捕鱼。","py":"Zhè ge jì jié jìn zhǐ zài hú lǐ bǔ yú.","en":"Fishing in the lake is banned this season."}]},{"hanzi":"淹","pinyin":"yān","meaning":"to flood, to submerge (v.)","examples":[{"zh":"洪水淹了很多农田。","py":"Hóng shuǐ yān le hěn duō nóng tián.","en":"The flood submerged a lot of farmland."},{"zh":"他不会游泳，掉到湖里差点儿被淹死。","py":"Tā bú huì yóu yǒng, diào dào hú lǐ chà diǎnr bèi yān sǐ.","en":"He can't swim and nearly drowned when he fell into the lake."}]},{"hanzi":"繁重","pinyin":"fán zhòng","meaning":"heavy, onerous (work) (adj.)","usage":"繁重的任务 (a heavy task)","examples":[{"zh":"他每天的工作非常繁重，很少有时间休息。","py":"Tā měi tiān de gōng zuò fēi cháng fán zhòng, hěn shǎo yǒu shí jiān xiū xi.","en":"His daily workload is very heavy and he rarely has time to rest."},{"zh":"学生们的学习任务太繁重了。","py":"Xué sheng men de xué xí rèn wù tài fán zhòng le.","en":"Students' study load is too heavy."}]},{"hanzi":"宇宙","pinyin":"yǔ zhòu","meaning":"universe (n.)","examples":[{"zh":"谁都不知道宇宙究竟有多大。","py":"Shéi dōu bù zhī dao yǔ zhòu jiū jìng yǒu duō dà.","en":"Nobody knows how big the universe really is."},{"zh":"宇宙里还有很多我们不知道的秘密。","py":"Yǔ zhòu lǐ hái yǒu hěn duō wǒ men bù zhī dao de mì mì.","en":"The universe still holds many secrets we don't know."}]},{"hanzi":"新颖","pinyin":"xīn yǐng","meaning":"new and original, novel (adj.)","examples":[{"zh":"我很喜欢你这种新颖的观点。","py":"Wǒ hěn xǐ huan nǐ zhè zhǒng xīn yǐng de guān diǎn.","en":"I like your fresh point of view."},{"zh":"他们的设计方案思路很新颖。","py":"Tā men de shè jì fāng àn sī lù hěn xīn yǐng.","en":"Their design proposal has a very fresh approach."}]},{"hanzi":"轨道","pinyin":"guǐ dào","meaning":"orbit; track (n.)","examples":[{"zh":"宇宙飞船升空后，将沿着地球轨道运行。","py":"Yǔ zhòu fēi chuán shēng kōng hòu, jiāng yán zhe dì qiú guǐ dào yùn xíng.","en":"After launch, the spacecraft will follow Earth's orbit."},{"zh":"战争结束后，国家逐步走上正常轨道。","py":"Zhàn zhēng jié shù hòu, guó jiā zhú bù zǒu shàng zhèng cháng guǐ dào.","en":"After the war, the country gradually got back on track."}]},{"hanzi":"直径","pinyin":"zhí jìng","meaning":"diameter (n.)","examples":[{"zh":"这个圆的直径是多少？","py":"Zhè ge yuán de zhí jìng shì duō shǎo?","en":"What is this circle's diameter?"},{"zh":"这棵大树的直径有两米。","py":"Zhè kē dà shù de zhí jìng yǒu liǎng mǐ.","en":"This big tree is two metres in diameter."}]},{"hanzi":"太空","pinyin":"tài kōng","meaning":"outer space (n.)","examples":[{"zh":"很多人都希望坐着宇宙飞船到太空去旅行。","py":"Hěn duō rén dōu xī wàng zuò zhe yǔ zhòu fēi chuán dào tài kōng qù lǚ xíng.","en":"Many people hope to travel to space in a spaceship."},{"zh":"中国的宇航员已经在太空生活了好几个月。","py":"Zhōng guó de yǔ háng yuán yǐ jīng zài tài kōng shēng huó le hǎo jǐ gè yuè.","en":"Chinese astronauts have lived in space for several months."}]},{"hanzi":"发射","pinyin":"fā shè","meaning":"to launch, to shoot (v.)","examples":[{"zh":"他们从海上发射了一枚火箭。","py":"Tā men cóng hǎi shàng fā shè le yì méi huǒ jiàn.","en":"They launched a rocket from the sea."},{"zh":"这颗卫星是去年发射的。","py":"Zhè kē wèi xīng shì qù nián fā shè de.","en":"This satellite was launched last year."}]},{"hanzi":"卫星","pinyin":"wèi xīng","meaning":"satellite (n.)","examples":[{"zh":"月亮是地球的卫星。","py":"Yuè liang shì dì qiú de wèi xīng.","en":"The moon is Earth's satellite."},{"zh":"我们可以通过卫星看电视直播。","py":"Wǒ men kě yǐ tōng guò wèi xīng kàn diàn shì zhí bō.","en":"We can watch live TV via satellite."}]},{"hanzi":"天文","pinyin":"tiān wén","meaning":"astronomy (n.)","usage":"天文爱好者 (amateur astronomer)","examples":[{"zh":"他从小就对天文很感兴趣。","py":"Tā cóng xiǎo jiù duì tiān wén hěn gǎn xìng qù.","en":"He's been interested in astronomy since he was a child."},{"zh":"我买了一台天文望远镜，晚上可以看星星。","py":"Wǒ mǎi le yì tái tiān wén wàng yuǎn jìng, wǎn shàng kě yǐ kàn xīng xīng.","en":"I bought a telescope so I can look at stars at night."}]},{"hanzi":"晴朗","pinyin":"qíng lǎng","meaning":"clear, sunny (adj.)","examples":[{"zh":"今天的天气很晴朗。","py":"Jīn tiān de tiān qì hěn qíng lǎng.","en":"The weather is clear today."},{"zh":"晴朗的夜晚可以看到很多星星。","py":"Qíng lǎng de yè wǎn kě yǐ kàn dào hěn duō xīng xīng.","en":"On a clear night you can see lots of stars."}]},{"hanzi":"观测","pinyin":"guān cè","meaning":"to observe (scientifically) (v.)","examples":[{"zh":"他花了三十多年的时间观测这个地区的气候变化。","py":"Tā huā le sān shí duō nián de shí jiān guān cè zhè ge dì qū de qì hòu biàn huà.","en":"He spent 30+ years observing this region's climate change."},{"zh":"科学家们正在观测这颗彗星。","py":"Kē xué jiā men zhèng zài guān cè zhè kē huì xīng.","en":"Scientists are observing this comet."}]},{"hanzi":"奇异","pinyin":"qí yì","meaning":"strange, wonderful (written) (adj.)","examples":[{"zh":"海市蜃楼是多发生在沙漠或海边的一种奇异的景象。","py":"Hǎi shì shèn lóu shì duō fā shēng zài shā mò huò hǎi biān de yì zhǒng qí yì de jǐng xiàng.","en":"A mirage is a strange sight seen mostly in deserts or by the sea."},{"zh":"这里的岩石形状奇异，吸引了很多游客。","py":"Zhè lǐ de yán shí xíng zhuàng qí yì, xī yǐn le hěn duō yóu kè.","en":"The rocks here have strange shapes and draw many tourists."}]},{"hanzi":"慷慨","pinyin":"kāng kǎi","meaning":"generous (adj.)","examples":[{"zh":"他对朋友很慷慨。","py":"Tā duì péng you hěn kāng kǎi.","en":"He is generous to his friends."},{"zh":"她慷慨地拿出一大笔钱帮助穷学生。","py":"Tā kāng kǎi de ná chū yí dà bǐ qián bāng zhù qióng xué sheng.","en":"She generously gave a large sum to help poor students."}]},{"hanzi":"粗略","pinyin":"cū lüè","meaning":"rough, superficial (adj.)","examples":[{"zh":"我们粗略地统计了一下，大概有一半职员愿意周末加班。","py":"Wǒ men cū lüè de tǒng jì le yí xià, dà gài yǒu yí bàn zhí yuán yuàn yì zhōu mò jiā bān.","en":"By a rough count, about half the staff will work weekends."},{"zh":"这只是一个粗略的报道，并没有提供详细情况。","py":"Zhè zhǐ shì yí gè cū lüè de bào dào, bìng méi yǒu tí gōng xiáng xì qíng kuàng.","en":"This is only a rough report with no details."}]},{"hanzi":"上帝","pinyin":"shàng dì","meaning":"God (n.)","examples":[{"zh":"他相信上帝。","py":"Tā xiāng xìn shàng dì.","en":"He believes in God."},{"zh":"“上帝啊！”她吃惊地叫了一声。","py":"\"Shàng dì a!\" tā chī jīng de jiào le yì shēng.","en":"'Oh my God!' she cried in surprise."}]},{"type":"grammar","point":"以便","sentence":"你先把材料准备好，__开会研究。","answer":"以便","pinyin":"Nǐ xiān bǎ cái liào zhǔn bèi hǎo, yǐ biàn kāi huì yán jiū.","meaning":"Get the materials ready first so we can discuss them at the meeting.","note":"以便 (conj.) starts the second clause: the action makes the goal easier to reach. Drop the subject if it's the same.","examples":[{"zh":"一个人临终前要对自己的财产进行清点，以便留给后人。","py":"Yí gè rén lín zhōng qián yào duì zì jǐ de cái chǎn jìn xíng qīng diǎn, yǐ biàn liú gěi hòu rén.","en":"Before dying, a person should take stock of their property so it can be left to their heirs."},{"zh":"请留下你的电话号码，以便我们联系你。","py":"Qǐng liú xià nǐ de diàn huà hào mǎ, yǐ biàn wǒ men lián xì nǐ.","en":"Please leave your phone number so we can contact you."},{"zh":"他提前一个小时出门，以便能准时到达。","py":"Tā tí qián yí gè xiǎo shí chū mén, yǐ biàn néng zhǔn shí dào dá.","en":"He left an hour early so that he could arrive on time."}]},{"type":"grammar","point":"以便","sentence":"一个人临终前要对自己的财产进行清点，__留给后人。","answer":"以便","pinyin":"Yí gè rén lín zhōng qián yào duì zì jǐ de cái chǎn jìn xíng qīng diǎn, yǐ biàn liú gěi hòu rén.","meaning":"Before dying, a person should take stock of their property so it can be left to their heirs.","note":"以便 + goal: so that…","examples":[{"zh":"你先把材料准备好，以便开会研究。","py":"Nǐ xiān bǎ cái liào zhǔn bèi hǎo, yǐ biàn kāi huì yán jiū.","en":"Get the materials ready first so we can discuss them at the meeting."},{"zh":"请留下你的电话号码，以便我们联系你。","py":"Qǐng liú xià nǐ de diàn huà hào mǎ, yǐ biàn wǒ men lián xì nǐ.","en":"Please leave your phone number so we can contact you."},{"zh":"他提前一个小时出门，以便能准时到达。","py":"Tā tí qián yí gè xiǎo shí chū mén, yǐ biàn néng zhǔn shí dào dá.","en":"He left an hour early so that he could arrive on time."}]},{"type":"grammar","point":"究竟","sentence":"你__叫什么名字？","answer":"究竟","pinyin":"Nǐ jiū jìng jiào shén me míng zi?","meaning":"What on earth is your name?","note":"究竟 strengthens a wh-, choice or A-not-A question. Not used in 吗 questions.","examples":[{"zh":"他究竟是日本人还是中国人？","py":"Tā jiū jìng shì Rì běn rén hái shì Zhōng guó rén?","en":"Is he actually Japanese or Chinese?"},{"zh":"这究竟是怎么回事？","py":"Zhè jiū jìng shì zěn me huí shì?","en":"What exactly is going on here?"},{"zh":"你究竟想不想去？","py":"Nǐ jiū jìng xiǎng bù xiǎng qù?","en":"Do you actually want to go or not?"}]},{"type":"grammar","point":"究竟","sentence":"他__是日本人还是中国人？","answer":"究竟","pinyin":"Tā jiū jìng shì Rì běn rén hái shì Zhōng guó rén?","meaning":"Is he actually Japanese or Chinese?","note":"究竟 in a choice question presses for the real answer.","examples":[{"zh":"你究竟叫什么名字？","py":"Nǐ jiū jìng jiào shén me míng zi?","en":"What on earth is your name?"},{"zh":"这究竟是怎么回事？","py":"Zhè jiū jìng shì zěn me huí shì?","en":"What exactly is going on here?"},{"zh":"你究竟想不想去？","py":"Nǐ jiū jìng xiǎng bù xiǎng qù?","en":"Do you actually want to go or not?"}]},{"type":"grammar","point":"为……而……","sentence":"他正在__找到一份理想的工作__努力。","answer":"为|而","pinyin":"Tā zhèng zài wèi zhǎo dào yí fèn lǐ xiǎng de gōng zuò ér nǔ lì.","meaning":"He's working hard to find an ideal job.","note":"为 + reason or purpose + 而 + verb/adjective. One subject at the start; no pause before 而.","examples":[{"zh":"她为考不上大学而难过。","py":"Tā wèi kǎo bú shàng dà xué ér nán guò.","en":"She's upset about not getting into university."},{"zh":"我们为取得这么好的成绩而高兴。","py":"Wǒ men wèi qǔ dé zhè me hǎo de chéng jì ér gāo xìng.","en":"We're happy about getting such good results."},{"zh":"不要为一点儿小事而生气。","py":"Bú yào wèi yì diǎnr xiǎo shì ér shēng qì.","en":"Don't get angry over little things."}]},{"type":"grammar","point":"为……而……","sentence":"她__考不上大学__难过。","answer":"为|而","pinyin":"Tā wèi kǎo bú shàng dà xué ér nán guò.","meaning":"She's upset about not getting into university.","note":"为……而……: because of / for the sake of …","examples":[{"zh":"他正在为找到一份理想的工作而努力。","py":"Tā zhèng zài wèi zhǎo dào yí fèn lǐ xiǎng de gōng zuò ér nǔ lì.","en":"He's working hard to find an ideal job."},{"zh":"我们为取得这么好的成绩而高兴。","py":"Wǒ men wèi qǔ dé zhè me hǎo de chéng jì ér gāo xìng.","en":"We're happy about getting such good results."},{"zh":"不要为一点儿小事而生气。","py":"Bú yào wèi yì diǎnr xiǎo shì ér shēng qì.","en":"Don't get angry over little things."}]},{"type":"grammar","point":"从而","sentence":"有了这笔遗产，许多人就不必再学游泳，__少了被水淹死的危险。","answer":"从而","pinyin":"Yǒu le zhè bǐ yí chǎn, xǔ duō rén jiù bú bì zài xué yóu yǒng, cóng ér shǎo le bèi shuǐ yān sǐ de wēi xiǎn.","meaning":"With this legacy, many no longer need to learn to swim, and thus face less risk of drowning.","note":"从而 (conj.) gives the result of the previous action. Starts the second clause and keeps the same subject. Written.","examples":[{"zh":"经过多年研究，科学家们终于找到了这种传染病的病因，从而为研制疫苗创造了条件。","py":"Jīng guò duō nián yán jiū, kē xué jiā men zhōng yú zhǎo dào le zhè zhǒng chuán rǎn bìng de bìng yīn, cóng ér wèi yán zhì yì miáo chuàng zào le tiáo jiàn.","en":"After years of research, scientists found the cause, thereby paving the way for a vaccine."},{"zh":"他每天坚持锻炼，从而保持了健康的身体。","py":"Tā měi tiān jiān chí duàn liàn, cóng ér bǎo chí le jiàn kāng de shēn tǐ.","en":"He exercises every day and thereby stays healthy."},{"zh":"公司降低了价格，从而吸引了更多顾客。","py":"Gōng sī jiàng dī le jià gé, cóng ér xī yǐn le gèng duō gù kè.","en":"The company lowered prices, thus attracting more customers."}]},{"type":"grammar","point":"从而","sentence":"经过多年研究，科学家们终于找到了这种传染病的病因，__为研制疫苗创造了条件。","answer":"从而","pinyin":"Jīng guò duō nián yán jiū, kē xué jiā men zhōng yú zhǎo dào le zhè zhǒng chuán rǎn bìng de bìng yīn, cóng ér wèi yán zhì yì miáo chuàng zào le tiáo jiàn.","meaning":"After years of research, scientists found the cause, thereby paving the way for a vaccine.","note":"从而: thereby, thus.","examples":[{"zh":"有了这笔遗产，许多人就不必再学游泳，从而少了被水淹死的危险。","py":"Yǒu le zhè bǐ yí chǎn, xǔ duō rén jiù bú bì zài xué yóu yǒng, cóng ér shǎo le bèi shuǐ yān sǐ de wēi xiǎn.","en":"With this legacy, many no longer need to learn to swim, and thus face less risk of drowning."},{"zh":"他每天坚持锻炼，从而保持了健康的身体。","py":"Tā měi tiān jiān chí duàn liàn, cóng ér bǎo chí le jiàn kāng de shēn tǐ.","en":"He exercises every day and thereby stays healthy."},{"zh":"公司降低了价格，从而吸引了更多顾客。","py":"Gōng sī jiàng dī le jià gé, cóng ér xī yǐn le gèng duō gù kè.","en":"The company lowered prices, thus attracting more customers."}]},{"type":"grammar","point":"仅……就……","sentence":"现在生活费很高，上个月__电话费__花了500元。","answer":"仅|就","pinyin":"Xiàn zài shēng huó fèi hěn gāo, shàng gè yuè jǐn diàn huà fèi jiù huā le 500 yuán.","meaning":"Living costs are high; the phone bill alone was 500 yuan last month.","note":"仅 (= 光, written) limits the scope: even this small part already reaches a large amount.","examples":[{"zh":"这次参加展览的厂家很多，仅一楼大厅就有200家。","py":"Zhè cì cān jiā zhǎn lǎn de chǎng jiā hěn duō, jǐn yī lóu dà tīng jiù yǒu 200 jiā.","en":"Many manufacturers came; the ground-floor hall alone had 200."},{"zh":"这个城市很大，仅地铁线路就有二十多条。","py":"Zhè ge chéng shì hěn dà, jǐn dì tiě xiàn lù jiù yǒu èr shí duō tiáo.","en":"This city is huge; it has over twenty metro lines alone."},{"zh":"这家饭馆很受欢迎，仅中午就要接待三百多位客人。","py":"Zhè jiā fàn guǎn hěn shòu huān yíng, jǐn zhōng wǔ jiù yào jiē dài sān bǎi duō wèi kè rén.","en":"This restaurant is so popular that it serves 300+ guests at lunch alone."}]},{"type":"grammar","point":"仅……就……","sentence":"这次参加展览的厂家很多，__一楼大厅__有200家。","answer":"仅|就","pinyin":"Zhè cì cān jiā zhǎn lǎn de chǎng jiā hěn duō, jǐn yī lóu dà tīng jiù yǒu 200 jiā.","meaning":"Many manufacturers came; the ground-floor hall alone had 200.","note":"仅 A 就 B: A alone already amounts to B.","examples":[{"zh":"现在生活费很高，上个月仅电话费就花了500元。","py":"Xiàn zài shēng huó fèi hěn gāo, shàng gè yuè jǐn diàn huà fèi jiù huā le 500 yuán.","en":"Living costs are high; the phone bill alone was 500 yuan last month."},{"zh":"这个城市很大，仅地铁线路就有二十多条。","py":"Zhè ge chéng shì hěn dà, jǐn dì tiě xiàn lù jiù yǒu èr shí duō tiáo.","en":"This city is huge; it has over twenty metro lines alone."},{"zh":"这家饭馆很受欢迎，仅中午就要接待三百多位客人。","py":"Zhè jiā fàn guǎn hěn shòu huān yíng, jǐn zhōng wǔ jiù yào jiē dài sān bǎi duō wèi kè rén.","en":"This restaurant is so popular that it serves 300+ guests at lunch alone."}]}]}];
+
+/* ---------- FSRS-5 scheduler ---------- */
+// FSRS-START
+const W=[0.40255,1.18385,3.173,15.69105,7.1949,0.5345,1.4604,0.0046,1.54575,0.1192,1.01925,1.9395,0.11,0.29605,2.2698,0.2315,2.9898,0.51655,0.6621];
+const DECAY=-0.5, FACTOR=19/81, MIN=6e4, HOUR=36e5, DAY=864e5;
+const clampD=d=>Math.min(10,Math.max(1,d));
+const retr=(t,s)=>Math.pow(1+FACTOR*t/s,DECAY);
+const ivlDays=(s,ret)=>Math.min(36500,Math.max(1,Math.round(s/FACTOR*(Math.pow(ret,1/DECAY)-1))));
+const initD=g=>clampD(W[4]-Math.exp(W[5]*(g-1))+1);
+const nextD=(d,g)=>clampD(W[7]*initD(4)+(1-W[7])*(d-W[6]*(g-3)*(10-d)/9));
+const recallS=(d,s,r,g)=>s*(1+Math.exp(W[8])*(11-d)*Math.pow(s,-W[9])*(Math.exp(W[10]*(1-r))-1)*(g===2?W[15]:1)*(g===4?W[16]:1));
+const forgetS=(d,s,r)=>Math.min(s,W[11]*Math.pow(d,-W[12])*(Math.pow(s+1,W[13])-1)*Math.exp(W[14]*(1-r)));
+const shortS=(s,g)=>s*Math.exp(W[17]*(g-3+W[18]));
+// state: 0 new, 1 learning, 2 review, 3 relearning. grade: 1 again, 2 hard, 3 good, 4 easy
+function schedule(prev,g,now,ret){
+  const st=prev?{...prev}:{state:0,reps:0,lapses:0,intro:now};
+  st.reps=(st.reps||0)+1;
+  const graduate=extra=>{st.state=2;st.ivl=ivlDays(st.s,ret)+(extra||0);st.due=now+st.ivl*DAY;};
+  if(st.state===0){
+    st.s=W[g-1]; st.d=initD(g);
+    if(g===4) graduate();
+    else {st.state=1; st.ivl=0; st.due=now+(g===1?1:g===2?6:10)*MIN;}
+  } else if(st.state===1||st.state===3){
+    st.s=shortS(st.s,g); st.d=nextD(st.d,g);
+    if(g===1) st.due=now+MIN;
+    else if(g===2) st.due=now+6*MIN;
+    else graduate(g===4?1:0);
+  } else {
+    const r=retr(Math.max(0,(now-st.last)/DAY),st.s);
+    if(g===1){st.s=forgetS(st.d,st.s,r); st.lapses=(st.lapses||0)+1; st.state=3; st.ivl=0; st.due=now+10*MIN;}
+    else {st.s=recallS(st.d,st.s,r,g); graduate();}
+    st.d=nextD(st.d,g);
+  }
+  st.last=now;
+  return st;
+}
+// FSRS-END
+
+/* ---------- Storage ---------- */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const LS={
+  get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},
+  set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){toast('Progress could not be saved. Browser storage is full or blocked.')}}
+};
+let settings=Object.assign({voice:'',rate:0.85,lastBackup:0,newPerDay:10,retention:0.9,read:true,write:false,hand:true,showSample:true},LS.get('zr.settings',{}));
+let userDecks=LS.get('zr.decks',[]);
+let srs=LS.get('zr.srs',{});
+let log=LS.get('zr.log',[]);
+function save(){LS.set('zr.srs',srs);LS.set('zr.log',log);}
+function saveSettings(){LS.set('zr.settings',settings);}
+function saveDecks(){LS.set('zr.decks',userDecks);}
+
+/* ---------- Content model ---------- */
+function decks(){const own=new Set(userDecks.map(d=>d.deck));return [...(settings.showSample?SAMPLE_DECKS.filter(d=>!own.has(d.deck)):[]),...userDecks];}
+function notes(){
+  const out=[];
+  for(const d of decks()) for(const c of d.cards){
+    const type=c.type==='grammar'?'grammar':'vocab';
+    out.push({...c,type,deck:d.deck,id:d.deck+'::'+(c.id||(type==='grammar'?c.sentence:c.hanzi))});
+  }
+  return out;
+}
+let _items=null;
+function items(){
+  if(_items) return _items;
+  const out=[];
+  for(const n of notes()){
+    if(n.type==='grammar') out.push({key:n.id+'#c',dir:'c',note:n});
+    else{
+      if(settings.read) out.push({key:n.id+'#r',dir:'r',note:n});
+      if(settings.write) out.push({key:n.id+'#w',dir:'w',note:n});
+      if(settings.hand&&canHand(n.hanzi)) out.push({key:n.id+'#h',dir:'h',note:n});
+    }
+  }
+  return _items=out;
+}
+function invalidate(){_items=null;}
+function canHand(word){return !!window.HanziWriter&&[...String(word)].filter(isHan).length>0&&[...String(word)].filter(isHan).every(c=>window.STROKES&&STROKES[c]);}
+function newEligible(it){
+  if((it.dir!=='w'&&it.dir!=='h')||!settings.read) return true;
+  const r=srs[it.note.id+'#r']; return !!r&&r.state===2; // write a word only after you can read it
+}
+const startOfDay=t=>{const d=new Date(t);d.setHours(0,0,0,0);return d.getTime();};
+const endOfDay=t=>startOfDay(t)+DAY-1;
+const deckOf=key=>String(key).split('::')[0];
+const shortName=deck=>(String(deck).match(/^第\S+课/)||[deck])[0];
+function introducedToday(now,deck){const s=startOfDay(now);let n=0;for(const k in srs) if(srs[k].intro>=s&&(!deck||deckOf(k)===deck)) n++;return n;}
+function newLeft(now,deck){return Math.max(0,settings.newPerDay-introducedToday(now,deck));}
+function status(st){if(!st) return 'new'; if(st.state===1||st.state===3) return 'learning'; return st.ivl>=21?'mature':'young';}
+
+/* ---------- Queue ---------- */
+function counts(now=Date.now(),deck=null){
+  const eod=endOfDay(now);const per={};
+  for(const it of items()){
+    const dk=it.note.deck;if(deck&&dk!==deck) continue;
+    const c=per[dk]??={due:0,learn:0,fresh:0};const st=srs[it.key];
+    if(!st){if(newEligible(it)) c.fresh++;continue;}
+    if(st.state===2){if(st.due<=eod) c.due++;} else c.learn++;
+  }
+  const out={due:0,learn:0,fresh:0};
+  for(const dk in per){out.due+=per[dk].due;out.learn+=per[dk].learn;out.fresh+=Math.min(per[dk].fresh,newLeft(now,dk));}
+  return out;
+}
+function nextItem(now){
+  const eod=endOfDay(now),deck=session.deck;let L=null,R=null,A=null,N=null;const quota={};
+  const earlier=(a,b)=>!a||srs[b.key].due<srs[a.key].due;
+  for(const it of items()){
+    const dk=it.note.deck;if(deck&&dk!==deck) continue;
+    const st=srs[it.key];
+    if(!st){if(!N&&newEligible(it)&&(quota[dk]??=newLeft(now,dk))>0) N=it;continue;}
+    if(st.state===2){if(st.due<=eod&&earlier(R,it)) R=it;}
+    else if(st.due<=now){if(earlier(L,it)) L=it;}
+    else if(st.due<=now+20*MIN&&earlier(A,it)) A=it;
+  }
+  if(L) return L;
+  if(N&&(!R||session.done%4===3)) return N; // mix a new card in after every few reviews
+  if(R) return R;
+  if(N) return N;
+  return A;
+}
+
+/* ---------- Helpers ---------- */
+const TONES={1:'āēīōūǖĀĒĪŌŪǕ',2:'áéíóúǘÁÉÍÓÚǗ',3:'ǎěǐǒǔǚǍĚǏǑǓǙ',4:'àèìòùǜÀÈÌÒÙǛ'};
+function toneOf(s){for(const t in TONES) for(const ch of s) if(TONES[t].includes(ch)) return +t; return 5;}
+const syl=py=>String(py||'').trim().split(/\s+/).filter(Boolean);
+const pyHTML=py=>syl(py).map(s=>`<span class="t${toneOf(s)}">${esc(s)}</span>`).join(' ');
+const isHan=c=>/\p{Script=Han}/u.test(c);
+const GRID='<svg class="grid" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path d="M50 0V100M0 50H100"/><path class="d" d="M0 0L100 100M100 0L0 100"/></svg>';
+function cellsHTML(hanzi,py,{show=true,color=false,pinyin=false}={}){
+  const chars=[...String(hanzi)];const s=syl(py);
+  const han=chars.filter(isHan).length;const aligned=han===s.length;
+  const size=chars.length<=2?112:chars.length===3?96:80;
+  let i=0;
+  const cols=chars.map(ch=>{
+    const sy=isHan(ch)&&aligned?s[i++]:'';
+    const t=sy?toneOf(sy):5;
+    return `<div class="col"><div class="py ${pinyin&&sy?'t'+t:''}">${pinyin&&sy?esc(sy):'&nbsp;'}</div><div class="cell" style="--c:min(${size}px,${Math.floor(88/chars.length)}vw)">${GRID}<span class="${show&&color?'t'+t:''}">${show?esc(ch):''}</span></div></div>`;
+  }).join('');
+  return `<div class="cells">${cols}</div>${pinyin&&!aligned&&py?`<div style="margin-top:10px;font-size:20px">${pyHTML(py)}</div>`:''}`;
+}
+function blanks(n,rev){
+  const parts=String(n.sentence).split('__'),ans=String(n.answer||'').split('|');
+  return parts.map((p,i)=>esc(p)+(i<parts.length-1?`<span class="blank">${rev?esc(ans[i]??ans[ans.length-1]):'&nbsp;'}</span>`:'')).join('');
+}
+function fillText(n){const ans=String(n.answer||'').split('|');let i=0;return String(n.sentence).replace(/__/g,()=>ans[i++]??ans[ans.length-1]);}
+function usageHTML(n){
+  if(!n.usage) return '';
+  const m=String(n.usage).match(/^(.*?)\s*\((.*)\)$/);
+  return `<div class="usage">${m?`<span>${esc(m[1])}</span> ${esc(m[2])}`:`<span>${esc(n.usage)}</span>`}</div>`;
+}
+function exList(n){return n.examples||(n.example?[{zh:n.example,en:n.exampleMeaning}]:[]);}
+function exHTML(n,max){
+  const list=exList(n);if(!list.length) return '';
+  const terms=(n.type==='grammar'?String(n.answer||'').split('|'):[n.hanzi]).filter(Boolean);
+  const hl=s=>{let h=esc(s);for(const t of terms) h=h.split(esc(t)).join(`<b>${esc(t)}</b>`);return h;};
+  return `<div class="exs">${list.slice(0,max||3).map(e=>`<button class="exb" data-say="${esc(e.zh)}" aria-label="Play: ${esc(e.zh)}"><span class="zh">${hl(e.zh)}</span>${e.py?`<span class="p">${esc(e.py)}</span>`:''}${e.en?`<span class="e">${esc(e.en)}</span>`:''}</button>`).join('')}</div>`;
+}
+function fmtIvl(ms){
+  const m=ms/MIN;
+  if(m<60) return Math.max(1,Math.round(m))+'m';
+  if(ms<DAY) return Math.round(ms/HOUR)+'h';
+  const d=Math.round(ms/DAY);
+  if(d<31) return d+'d';
+  if(d<365) return Math.round(d/30)+'mo';
+  return (d/365).toFixed(1)+'y';
+}
+function speak(text){
+  if(!('speechSynthesis' in window)) return toast('Speech is not available in this browser.');
+  speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(text);u.lang='zh-CN';u.rate=settings.rate||.85;
+  const vs=zhVoices();const v=vs.find(v=>v.voiceURI===settings.voice)||vs.find(v=>/zh[-_](CN|Hans)/i.test(v.lang));if(v) u.voice=v;
+  speechSynthesis.speak(u);
+}
+function zhVoices(){
+  if(!('speechSynthesis' in window)) return [];
+  return speechSynthesis.getVoices().filter(v=>/^(zh|cmn)/i.test(v.lang)).sort((a,b)=>(/CN|Hans/i.test(b.lang)-/CN|Hans/i.test(a.lang))||a.name.localeCompare(b.name));
+}
+let toastTimer;
+function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),2600);}
+function studiedDays(){const s=new Set();for(const e of log) s.add(startOfDay(e.t));return s;}
+function streak(){
+  const days=studiedDays();let d=startOfDay(Date.now());
+  if(!days.has(d)) d-=DAY;let n=0;
+  while(days.has(d)){n++;d=startOfDay(d-DAY/2);}
+  return n;
+}
+const ICON={
+  close:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+  undo:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 14L4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/></svg>',
+  sound:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg>'
+};
+
+/* ---------- Views ---------- */
+let view='today';
+function go(v){
+  view=v;
+  for(const b of document.querySelectorAll('.tab')){if(b.dataset.view===v) b.setAttribute('aria-current','page'); else b.removeAttribute('aria-current');}
+  render();window.scrollTo(0,0);
+}
+function render(){({today:renderToday,words:renderWords,progress:renderProgress,settings:renderSettings})[view]();}
+
+function renderToday(){
+  const now=Date.now(),c=counts(now),d=new Date(now);
+  const zhDate=`${d.getMonth()+1}月${d.getDate()}日 星期${'日一二三四五六'[d.getDay()]}`;
+  const total=c.due+c.learn+c.fresh;
+  const mins=Math.max(1,Math.round(total*10/60));
+  let main;
+  if(total){
+    const parts=[];
+    if(c.due) parts.push(`<b>${c.due}</b> ${c.due===1?'review':'reviews'}`);
+    if(c.fresh) parts.push(`<b>${c.fresh}</b> new ${c.fresh===1?'card':'cards'}`);
+    if(c.learn) parts.push(`<b>${c.learn}</b> still learning`);
+    main=`<div><p>${parts.join(', ').replace(/, ([^,]*)$/,' and $1')}</p><p class="muted" style="margin-top:6px">All lessons, about ${mins} min</p></div><button class="btn primary" id="start">Study all</button>`;
+  } else {
+    const tomorrow=items().filter(it=>{const st=srs[it.key];return st&&st.due<=endOfDay(now+DAY)}).length;
+    main=`<div><p>You're done for today.</p><p class="muted" style="margin-top:6px">${tomorrow?`${tomorrow} ${tomorrow===1?'card is':'cards are'} due tomorrow.`:'Add a deck in Settings to get more cards.'}</p></div><button class="btn" data-go="words">Browse words</button>`;
+  }
+  const days=studiedDays(),today=startOfDay(now);let stamps='',labels='';
+  for(let i=13;i>=0;i--){const t=startOfDay(today-i*DAY+HOUR*2);const on=days.has(t);
+    stamps+=`<div class="stamp ${on?'on':''} ${i===0?'today':''}" title="${new Date(t).toDateString()}">${on?'学':''}</div>`;
+    labels+=`<span>${new Date(t).getDate()}</span>`;}
+  const st=streak();
+  $('#main').innerHTML=`
+    <h1 class="zh">${zhDate}</h1>
+    <p class="sub">${d.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'})}</p>
+    <section class="sheet today-main">${main}</section>
+    <h2>Lessons</h2>
+    <div class="decks">${deckRows()}</div>
+    <h2>Study days</h2>
+    <div class="stamps">${stamps}</div><div class="stamp-days">${labels}</div>
+    <p class="muted">${st?`${st}-day streak`:'Review today to start a streak.'}</p>
+    ${log.length&&Date.now()-(settings.lastBackup||0)>14*DAY?`<p class="muted" style="margin-top:20px">${settings.lastBackup?'Your last backup is over two weeks old.':'You haven\'t backed up your progress yet.'} <button class="btn small" data-go="settings">Back up in Settings</button></p>`:''}`;
+  $('#start')?.addEventListener('click',()=>openReview(null));
+  for(const b of document.querySelectorAll('[data-study]')) b.addEventListener('click',()=>openReview(b.dataset.study));
+}
+function deckRows(){
+  const by={},now=Date.now();
+  for(const it of items()){const k=it.note.deck;(by[k]??={n:0,done:0});by[k].n++;const st=srs[it.key];if(st&&st.state===2)by[k].done++;}
+  const ds=decks();
+  if(!ds.length) return `<div class="sheet empty">No lessons yet. Import one in Settings.</div>`;
+  return ds.map(d=>{
+    const b=by[d.deck]||{n:0,done:0};const p=b.n?Math.round(b.done/b.n*100):0;
+    const c=counts(now,d.deck);const parts=[];
+    if(c.due) parts.push(`${c.due} to review`);
+    if(c.fresh) parts.push(`${c.fresh} new`);
+    if(c.learn) parts.push(`${c.learn} learning`);
+    const any=c.due+c.fresh+c.learn;
+    return `<div class="deck"><div><strong>${esc(d.deck)}</strong><span class="muted deck-sub">${any?parts.join(', '):'Done for today'}. ${p}% learned.</span></div><button class="btn small ${any?'go':''}" data-study="${esc(d.deck)}" ${any?'':'disabled'}>Study</button><div class="bar"><i style="width:${p}%"></i></div></div>`;
+  }).join('');
+}
+
+let wordsDeck='all',wordsQuery='';
+let wordsTab='list';
+function renderWords(){
+  PICK=null;
+  if(wordsTab==='dict') return renderDict();
+  if(wordsTab==='flash') return renderFlash();
+  const ds=decks();
+  $('#main').innerHTML=`
+    <h1>Words</h1>${segHTML()}
+    <div class="toolbar"><input class="search" id="q" type="search" placeholder="Search characters, pinyin or meaning" value="${esc(wordsQuery)}" aria-label="Search"></div>
+    <div class="chips">${['all',...ds.map(d=>d.deck)].map(n=>`<button class="chip" data-deck="${esc(n)}" aria-pressed="${n===wordsDeck}">${n==='all'?'All lessons':esc(shortName(n))}</button>`).join('')}</div>
+    <div class="list" id="list"></div>`;
+  $('#q').addEventListener('input',e=>{wordsQuery=e.target.value;renderList();});
+  for(const b of document.querySelectorAll('.chip')) b.addEventListener('click',()=>{wordsDeck=b.dataset.deck;renderWords();});
+  bindSeg();
+  renderList();
+}
+function renderList(){
+  const q=wordsQuery.trim().toLowerCase();
+  const strip=s=>s.normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  const ns=notes().filter(n=>(wordsDeck==='all'||n.deck===wordsDeck)&&(!q||strip([n.hanzi,n.pinyin,n.meaning,n.sentence,n.answer,n.point].join(' ').toLowerCase()).includes(strip(q))));
+  $('#list').innerHTML=ns.length?ns.map(n=>{
+    const keys=n.type==='grammar'?[n.id+'#c']:[n.id+'#r',n.id+'#w',n.id+'#h'].filter(k=>srs[k]||k.endsWith('#r'));
+    const sts=keys.map(k=>status(srs[k]));
+    const s=sts.includes('learning')?'learning':sts.every(x=>x==='mature')?'mature':sts.some(x=>x!=='new')?'young':'new';
+    const label={new:'New',learning:'Learning',young:'Learned',mature:'Mature'}[s];
+    const detail=n.type==='grammar'?`${n.note?`<div class="note">${esc(n.note)}</div>`:''}${exHTML(n,5)}`:`${usageHTML(n)}${exHTML(n,5)}`;
+    const say=n.type==='grammar'?fillText(n):n.hanzi;
+    const wrap=row=>`<div class="item">${row}<div class="detail" hidden><button class="btn small play" data-say="${esc(say)}">${ICON.sound}Play</button>${detail}</div></div>`;
+    if(n.type==='grammar') return wrap(`<button class="row gram" aria-expanded="false" data-say="${esc(fillText(n))}"><span class="hz" style="font-size:22px">${blanks(n,true)}</span><span><span class="mn">${esc(n.point)}</span><br><span class="muted">${esc(n.meaning)}</span></span><span class="status ${s}">${label}</span></button>`);
+    return wrap(`<button class="row" aria-expanded="false" data-say="${esc(n.hanzi)}"><span class="hz">${esc(n.hanzi)}</span><span><span class="py">${pyHTML(n.pinyin)}</span><br><span class="mn">${esc(n.meaning)}</span></span><span class="status ${s}">${label}</span></button>`);
+  }).join(''):`<div class="empty">No words match "${esc(wordsQuery)}".</div>`;
+  for(const r of document.querySelectorAll('.row')) r.addEventListener('click',()=>{
+    const d=r.nextElementSibling,open=d.hidden;d.hidden=!open;r.setAttribute('aria-expanded',open);
+  });
+}
+
+let progDeck='all';
+function renderProgress(){
+  const now=Date.now(),today=startOfDay(now);
+  if(progDeck!=='all'&&!decks().some(d=>d.deck===progDeck)) progDeck='all';
+  const its=items().filter(it=>progDeck==='all'||it.note.deck===progDeck);
+  const lg=log.filter(e=>progDeck==='all'||deckOf(e.k)===progDeck);
+  const tally={new:0,learning:0,young:0,mature:0};
+  for(const it of its) tally[status(srs[it.key])]++;
+  const recent=lg.filter(e=>e.p===2&&e.t>=now-30*DAY);
+  const ret=recent.length?Math.round(recent.filter(e=>e.g>1).length/recent.length*100)+'%':'–';
+  const per=Array(14).fill(0);for(const e of lg){const i=Math.round((today-startOfDay(e.t))/DAY);if(i>=0&&i<14) per[13-i]++;}
+  const fc=Array(14).fill(0);for(const it of its){const st=srs[it.key];if(st&&st.state===2){const i=Math.max(0,Math.round((startOfDay(st.due)-today)/DAY));if(i<14) fc[i]++;}}
+  const bars=(arr,cls)=>{const m=Math.max(1,...arr);return `<div class="chart ${cls||''}">${arr.map(v=>`<div>${v||''}<i style="height:${v/m*100}%"></i></div>`).join('')}</div>`;};
+  const axis=(f)=>`<div class="axis">${Array.from({length:14},(_,i)=>`<span>${f(i)}</span>`).join('')}</div>`;
+  $('#main').innerHTML=`
+    <h1>Progress</h1>
+    <div class="chips" style="margin-top:20px">${['all',...decks().map(d=>d.deck)].map(n=>`<button class="chip" data-pdeck="${esc(n)}" aria-pressed="${n===progDeck}">${n==='all'?'All lessons':esc(shortName(n))}</button>`).join('')}</div>
+    <div class="stats" style="margin-top:10px">
+      <div class="stat"><b>${tally.young+tally.mature}</b><span>Cards learned</span></div>
+      <div class="stat"><b>${tally.mature}</b><span>Mature (21+ day interval)</span></div>
+      <div class="stat"><b>${ret}</b><span>Recall rate, last 30 days</span></div>
+      <div class="stat"><b>${streak()}</b><span>Day streak</span></div>
+    </div>
+    <h2>Reviews per day</h2>${bars(per)}${axis(i=>new Date(today-(13-i)*DAY+HOUR*2).getDate())}
+    <h2>Due in the next two weeks</h2>${bars(fc,'blue')}${axis(i=>i===0?'Now':new Date(today+i*DAY+HOUR*2).getDate())}
+    <h2>All cards</h2>
+    <div class="stats">
+      <div class="stat"><b>${tally.new}</b><span>Not started</span></div>
+      <div class="stat"><b>${tally.learning}</b><span>Learning</span></div>
+      <div class="stat"><b>${tally.young}</b><span>Learned (under 21 days)</span></div>
+      <div class="stat"><b>${tally.mature}</b><span>Mature</span></div>
+    </div>`;
+  for(const b of document.querySelectorAll('[data-pdeck]')) b.addEventListener('click',()=>{progDeck=b.dataset.pdeck;renderProgress();});
+}
+
+function renderSettings(){
+  $('#main').innerHTML=`
+    <h1>Settings</h1>
+    <h2>Study</h2>
+    <div class="sheet">
+      <div class="field"><div><label for="np">New cards per day, per lesson</label><p>Each lesson gets its own allowance. Each word gives a reading card, then a writing card once you can read it.</p></div><input id="np" type="number" min="0" max="200" value="${settings.newPerDay}"></div>
+      <div class="field"><div><label for="rt">Target recall</label><p>Higher means more reviews and fewer forgotten words.</p></div><select id="rt">${[.85,.9,.95].map(v=>`<option value="${v}" ${settings.retention==v?'selected':''}>${v*100}%</option>`).join('')}</select></div>
+      <div class="field"><div><label for="rd">Reading cards</label><p>See the characters, recall pinyin and meaning.</p></div><input id="rd" type="checkbox" ${settings.read?'checked':''}></div>
+      <div class="field"><div><label for="wr">Paper writing cards</label><p>See the meaning, write the characters on paper, then check yourself.</p></div><input id="wr" type="checkbox" ${settings.write?'checked':''}></div>
+      <div class="field"><div><label for="hd">Handwriting cards</label><p>See the meaning and pinyin, write each character with your finger. Strokes are checked as you write.</p></div><input id="hd" type="checkbox" ${settings.hand?'checked':''}></div>
+      <div class="field"><div><label for="sm">Built-in lessons</label><p>第3课 and 第4课, already in the app.</p></div><input id="sm" type="checkbox" ${settings.showSample?'checked':''}></div>
+    </div>
+    <h2>Voice</h2>
+    <div class="sheet">
+      <div class="field"><div><label for="vc">Voice</label><p>Voices come from this device. Sound only plays when you tap.</p></div><select id="vc" style="width:auto;max-width:190px"><option value="">Automatic</option>${zhVoices().map(v=>`<option value="${esc(v.voiceURI)}" ${settings.voice===v.voiceURI?'selected':''}>${esc(v.name)} (${esc(v.lang)})</option>`).join('')}</select></div>
+      <div class="field"><div><label for="vr">Speed</label></div><select id="vr" style="width:auto">${[[.6,'Slow'],[.75,'Slower'],[.85,'Normal'],[1,'Fast']].map(([v,l])=>`<option value="${v}" ${settings.rate==v?'selected':''}>${l}</option>`).join('')}</select></div>
+      <div class="btn-row" style="margin-top:6px"><button class="btn small" id="vt">${ICON.sound.replace('<svg','<svg style="width:16px;height:16px;vertical-align:-3px"')} Test: 你好，我在学习中文。</button></div>
+    </div>
+    <h2>Decks</h2>
+    <div class="sheet">
+      <p style="margin-top:0">Import a lesson file (.json). Importing a deck with the same name replaces its cards and keeps your progress.</p>
+      <div class="btn-row"><button class="btn" id="imp">Import deck</button></div>
+      ${userDecks.length?`<div style="margin-top:16px">${userDecks.map((d,i)=>`<div class="field"><div><label>${esc(d.deck)}</label><p>${d.cards.length} cards</p></div><button class="btn small danger" data-del="${i}">Remove</button></div>`).join('')}</div>`:''}
+      <details style="margin-top:16px"><summary class="muted">Deck file format</summary><pre>${esc(JSON.stringify({deck:"Lesson 3",cards:[{hanzi:"咖啡",pinyin:"kā fēi",meaning:"coffee",usage:"一杯咖啡 (a cup of coffee)",examples:[{zh:"我喜欢喝咖啡。",py:"Wǒ xǐ huan hē kā fēi.",en:"I like drinking coffee."}]},{type:"grammar",point:"吗 questions",sentence:"你喝咖啡__？",answer:"吗",pinyin:"Nǐ hē kā fēi ma?",meaning:"Do you drink coffee?",note:"吗 turns a statement into a yes/no question.",examples:[{zh:"你是学生吗？",py:"Nǐ shì xué sheng ma?",en:"Are you a student?"}]}]},null,2))}</pre></details>
+    </div>
+    <h2>Backup</h2>
+    <div class="sheet">
+      <p style="margin-top:0">Progress is saved on this device only. Export a backup now and then, and save it to iCloud Drive or Files.</p><p class="muted">${settings.lastBackup?`Last backup: ${new Date(settings.lastBackup).toLocaleDateString()}`:"No backup yet."}</p>
+      <div class="btn-row"><button class="btn" id="exp">Export backup</button><button class="btn" id="res">Restore backup</button><button class="btn danger" id="wipe">Reset progress</button></div>
+    </div>
+    <p class="muted" style="margin-top:24px">App version: ${APP_VERSION}</p>`;
+  const upd=()=>{invalidate();saveSettings();};
+  $('#np').addEventListener('change',e=>{settings.newPerDay=Math.max(0,parseInt(e.target.value)||0);upd();});
+  $('#rt').addEventListener('change',e=>{settings.retention=parseFloat(e.target.value);upd();});
+  $('#rd').addEventListener('change',e=>{settings.read=e.target.checked;upd();});
+  $('#wr').addEventListener('change',e=>{settings.write=e.target.checked;upd();});
+  $('#hd').addEventListener('change',e=>{settings.hand=e.target.checked;upd();});
+  $('#vc').addEventListener('change',e=>{settings.voice=e.target.value;saveSettings();speak('你好，我在学习中文。');});
+  $('#vr').addEventListener('change',e=>{settings.rate=parseFloat(e.target.value);saveSettings();speak('你好，我在学习中文。');});
+  $('#vt').addEventListener('click',()=>speak('你好，我在学习中文。'));
+  $('#sm').addEventListener('change',e=>{settings.showSample=e.target.checked;upd();});
+  $('#imp').addEventListener('click',()=>pickFile('deck'));
+  $('#res').addEventListener('click',()=>pickFile('backup'));
+  $('#exp').addEventListener('click',exportBackup);
+  $('#wipe').addEventListener('click',()=>{if(confirm('Reset all review progress? Your decks stay.')){srs={};log=[];save();toast('Progress reset.');}});
+  for(const b of document.querySelectorAll('[data-del]')) b.addEventListener('click',()=>{const d=userDecks[+b.dataset.del];if(confirm(`Remove "${d.deck}"?`)){userDecks.splice(+b.dataset.del,1);saveDecks();invalidate();renderSettings();toast('Deck removed.');}});
+}
+
+/* ---------- Import / export ---------- */
+let fileMode='deck';
+function pickFile(mode){fileMode=mode;$('#file').value='';$('#file').click();}
+$('#file').addEventListener('change',async e=>{
+  const f=e.target.files[0];if(!f) return;
+  let data;try{data=JSON.parse(await f.text());}catch(err){return toast('That file is not valid JSON.');}
+  if(fileMode==='backup'){
+    if(!data||!data.srs) return toast('That file is not a Zi Review backup.');
+    if(!confirm('Replace progress on this device with the backup?')) return;
+    srs=data.srs;log=data.log||[];if(Array.isArray(data.dict)){dictHist=data.dict;saveDict();}userDecks=data.decks||[];settings=Object.assign(settings,data.settings||{});
+    save();saveDecks();saveSettings();invalidate();render();return toast('Backup restored.');
+  }
+  const list=Array.isArray(data)?data:data.decks?data.decks:[data];
+  let added=0;
+  for(const d of list){
+    if(!d||!d.deck||!Array.isArray(d.cards)) continue;
+    const cards=d.cards.filter(c=>c&&((c.hanzi&&c.meaning)||(c.type==='grammar'&&c.sentence&&c.answer&&c.sentence.includes('__'))));
+    const i=userDecks.findIndex(x=>x.deck===d.deck);
+    if(i>=0) userDecks[i]={deck:d.deck,cards}; else userDecks.push({deck:d.deck,cards});
+    added+=cards.length;
+  }
+  if(!added) return toast('No cards found. Check the deck file format in Settings.');
+  saveDecks();invalidate();render();toast(`Imported ${added} cards.`);
+});
+function exportBackup(){
+  const blob=new Blob([JSON.stringify({app:'zi-review',version:1,exported:new Date().toISOString(),settings,decks:userDecks,srs,log,dict:dictHist})],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`zi-review-backup-${new Date().toISOString().slice(0,10)}.json`;a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+  settings.lastBackup=Date.now();saveSettings();if(view==='settings') renderSettings();
+}
+
+/* ---------- Review session ---------- */
+let session={done:0,correct:0,history:[],cur:null,revealed:false};
+function openReview(deck){session={deck:deck||null,done:0,correct:0,history:[],cur:null,revealed:false};session.startLeft=remaining();$('#review').hidden=false;document.body.classList.add('locked');nextCard();}
+function closeReview(){$('#review').hidden=true;document.body.classList.remove('locked');speechSynthesis?.cancel?.();render();}
+function remaining(){const c=counts(Date.now(),session.deck);return c.due+c.learn+c.fresh;}
+function nextCard(){session.cur=nextItem(Date.now());session.revealed=false;session.hw=null;session.cur?renderCard():renderDone();}
+function sayText(it){const n=it.note;return n.type==='grammar'?fillText(n):n.hanzi;}
+function renderCard(){
+  const it=session.cur,n=it.note,rev=session.revealed,left=remaining();
+  const pct=session.startLeft?Math.min(100,session.done/(session.done+left)*100):0;
+  let face='';
+  if(it.dir==='h'&&!rev){
+    return renderHand(it);
+  }
+  if(it.dir==='h'){
+    face=`<p class="prompt">${esc(n.meaning)}</p>`+cellsHTML(n.hanzi,n.pinyin,{show:true,color:true,pinyin:true});
+    const hw=session.hw||{};const v=handVerdict(hw);
+    face+=`<p class="verdict">${hw.gaveUp?'You looked at the answer.':hw.mistakes?`${hw.mistakes} ${hw.mistakes===1?'mistake':'mistakes'}${hw.shown?', with the stroke order shown':''}.`:'No mistakes.'} Suggested: ${['','Again','Hard','Good','Easy'][v]}.</p>`;
+  } else if(it.dir==='r'){
+    face=cellsHTML(n.hanzi,n.pinyin,{show:true,color:rev,pinyin:rev});
+    if(!rev) face+=`<p class="hint">Say it out loud, then reveal.</p>`;
+  } else if(it.dir==='w'){
+    face=`<p class="prompt">${esc(n.meaning)}</p>`+cellsHTML(n.hanzi,n.pinyin,{show:rev,color:rev,pinyin:rev});
+    if(!rev) face+=`<p class="hint">Write the characters on paper, then reveal.</p>`;
+  } else {
+    face=`<span class="point">${esc(n.point||'Grammar')}</span><div class="sentence">${blanks(n,rev)}</div><p class="answer meaning" style="font-size:18px;color:var(--ink-2);margin-top:12px">${esc(n.meaning)}</p>`;
+  }
+  if(rev){
+    if(it.dir==='r') face+=`<div class="answer"><div class="meaning">${esc(n.meaning)}</div>${usageHTML(n)}</div>${exHTML(n)}`;
+    if(it.dir==='w'||it.dir==='h') face+=`${usageHTML(n)}${exHTML(n)}`;
+    if(it.dir==='c') face+=`<div style="margin-top:10px;font-size:18px">${pyHTML(n.pinyin)}</div>${n.note?`<div class="note">${esc(n.note)}</div>`:''}${exHTML(n)}`;
+  }
+  const now=Date.now(),prev=srs[it.key];
+  const rates=[['Again','again'],['Hard',''],['Good',''],['Easy','']].map(([l,c],i)=>{
+    const st=schedule(prev,i+1,now,settings.retention);
+    const sug=it.dir==='h'&&i+1===handVerdict(session.hw||{});
+    return `<button class="rate ${c} ${sug?'suggest':''}" data-g="${i+1}"><b>${l}</b><small>${fmtIvl(st.due-now)}</small></button>`;}).join('');
+  $('#review').innerHTML=`
+    <div class="progress-line"><i style="width:${pct}%"></i></div>
+    <div class="rv-top">
+      <button class="icon-btn" id="rv-close" aria-label="Close review">${ICON.close}</button>
+      <div class="left">${left} left${session.deck?` in ${esc(shortName(session.deck))}`:''}</div>
+      <button class="icon-btn" id="rv-say" aria-label="Play sound">${ICON.sound}</button>
+      <button class="icon-btn" id="rv-undo" aria-label="Undo last answer" ${session.history.length?'':'disabled style="opacity:.35"'}>${ICON.undo}</button>
+    </div>
+    <div class="rv-body">${face}</div>
+    <div class="rv-bottom">${rev?`<div class="rates">${rates}</div><div class="keys">Keys 1 to 4 to answer, S to play sound</div>`:`<button class="btn primary reveal" id="rv-reveal">Show answer</button><div class="keys">Space to show answer</div>`}</div>`;
+  $('#rv-close').onclick=closeReview;
+  $('#rv-say').onclick=()=>speak(sayText(it));
+  $('#rv-undo').onclick=undo;
+  for(const el of document.querySelectorAll('#review .rv-body .cells, #review .sentence')) el.onclick=()=>speak(sayText(it));
+  if(rev){for(const b of document.querySelectorAll('.rate')) b.onclick=()=>grade(+b.dataset.g);}
+  else $('#rv-reveal').onclick=reveal;
+}
+function reveal(){
+  if(session.cur.dir==='h'&&session.hw&&!session.hw.done){session.hw.gaveUp=true;session.hw.writer?.cancelQuiz?.();}
+  session.revealed=true;renderCard();
+}
+/* ---------- Handwriting ---------- */
+function handVerdict(hw){
+  if(hw.gaveUp) return 1;
+  const chars=Math.max(1,hw.total||1),m=hw.mistakes||0;
+  if(hw.shown||m>chars*3) return 1;
+  if(m>chars) return 2;
+  return 3;
+}
+function cssVar(n){return getComputedStyle(document.documentElement).getPropertyValue(n).trim();}
+function renderHand(it){
+  const n=it.note,chars=[...n.hanzi].filter(isHan);
+  const hw=session.hw||(session.hw={idx:0,mistakes:0,shown:false,total:chars.length,done:false});
+  const left=remaining();
+  const size=Math.floor(Math.max(200,Math.min(340,window.innerWidth-40,window.innerHeight-(chars.length>1?400:340))));
+  const mini=chars.map((c,i)=>`<div class="cell ${i===hw.idx?'now':''}">${GRID}<span>${i<hw.idx?esc(c):''}</span></div>`).join('');
+  $('#review').innerHTML=`
+    <div class="progress-line"><i style="width:${session.startLeft?Math.min(100,session.done/(session.done+left)*100):0}%"></i></div>
+    <div class="rv-top">
+      <button class="icon-btn" id="rv-close" aria-label="Close review">${ICON.close}</button>
+      <div class="left">${left} left${session.deck?` in ${esc(shortName(session.deck))}`:''}</div>
+      <button class="icon-btn" id="rv-say" aria-label="Play sound">${ICON.sound}</button>
+      <button class="icon-btn" id="rv-undo" aria-label="Undo last answer" ${session.history.length?'':'disabled style="opacity:.35"'}>${ICON.undo}</button>
+    </div>
+    <div class="rv-body">
+      <p class="prompt" style="margin-bottom:6px;font-size:clamp(20px,4.5vw,26px)">${esc(n.meaning)}</p>
+      <div style="font-size:20px;margin-bottom:6px">${pyHTML(n.pinyin)}</div>
+      ${chars.length>1?`<div class="mini">${mini}</div>`:''}
+      <div class="cell hwcell" id="hw" style="--c:${size}px;font-size:0">${GRID}</div>
+      <p class="hw-status" id="hw-status">${chars.length>1?`Character ${hw.idx+1} of ${chars.length}. `:''}${hw.mistakes?`${hw.mistakes} ${hw.mistakes===1?'mistake':'mistakes'} so far.`:'Write it stroke by stroke.'}</p>
+    </div>
+    <div class="rv-bottom"><div class="hw-actions"><button class="btn" id="hw-show">Stroke order</button><button class="btn" id="rv-reveal">Show answer</button></div><div class="keys">Space to show answer</div></div>`;
+  $('#rv-close').onclick=closeReview;
+  $('#rv-say').onclick=()=>speak(n.hanzi);
+  $('#rv-undo').onclick=undo;
+  $('#rv-reveal').onclick=reveal;
+  const ch=chars[hw.idx];
+  const w=HanziWriter.create('hw',ch,{
+    width:size-4,height:size-4,padding:Math.round(size*.06),
+    showCharacter:false,showOutline:false,
+    strokeColor:cssVar('--ink'),outlineColor:cssVar('--grid-soft'),drawingColor:cssVar('--t3'),highlightColor:cssVar('--seal'),
+    drawingWidth:Math.max(14,Math.round(size/14)),showHintAfterMisses:3,highlightOnComplete:true,
+    strokeAnimationSpeed:1.4,delayBetweenStrokes:120,
+    charDataLoader:(c,done)=>done(STROKES[c])
+  });
+  hw.writer=w;
+  const status=()=>{const el=$('#hw-status');if(el) el.textContent=`${chars.length>1?`Character ${hw.idx+1} of ${chars.length}. `:''}${hw.mistakes} ${hw.mistakes===1?'mistake':'mistakes'} so far.`;};
+  const startQuiz=()=>w.quiz({
+    onMistake:()=>{hw.mistakes++;status();},
+    onComplete:()=>{
+      setTimeout(()=>{
+        if(session.hw!==hw) return;
+        hw.idx++;
+        if(hw.idx<chars.length) renderHand(it);
+        else {hw.done=true;session.revealed=true;renderCard();}
+      },450);
+    }
+  });
+  startQuiz();
+  $('#hw-show').onclick=()=>{
+    hw.shown=true;w.cancelQuiz();
+    w.showOutline();w.animateCharacter({onComplete:()=>{setTimeout(()=>{if(session.hw!==hw) return;w.hideCharacter();w.hideOutline();startQuiz();},500);}});
+  };
+}
+function grade(g){
+  const it=session.cur,now=Date.now(),prev=srs[it.key];
+  session.history.push({hw:session.hw,key:it.key,prev:prev?{...prev}:undefined,logLen:log.length,done:session.done,correct:session.correct,item:it});
+  srs[it.key]=schedule(prev,g,now,settings.retention);
+  log.push({t:now,k:it.key,g,p:prev?prev.state:0});
+  if(log.length>50000) log=log.slice(-40000);
+  session.done++;if(g>1) session.correct++;
+  save();nextCard();
+}
+function undo(){
+  const h=session.history.pop();if(!h) return;
+  if(h.prev) srs[h.key]=h.prev; else delete srs[h.key];
+  log.length=Math.min(log.length,h.logLen);session.done=h.done;session.correct=h.correct;
+  session.cur=h.item;session.hw=h.hw;session.revealed=true;save();renderCard();
+}
+function renderDone(){
+  const now=Date.now();let next=null;
+  for(const it of items()){if(session.deck&&it.note.deck!==session.deck) continue;const st=srs[it.key];if(st&&st.state!==2&&(!next||st.due<next)) next=st.due;}
+  const acc=session.done?Math.round(session.correct/session.done*100):0;
+  $('#review').innerHTML=`
+    <div class="rv-top"><button class="icon-btn" id="rv-close" aria-label="Close review">${ICON.close}</button><div class="left"></div></div>
+    <div class="rv-body">
+      <div class="cells"><div class="col"><div class="cell" style="--c:112px">${GRID}<span style="color:var(--seal)">好</span></div></div></div>
+      <p class="prompt" style="margin-top:24px">${session.done?(session.deck?`That's everything in ${esc(shortName(session.deck))} for now.`:'That\'s everything for now.'):'Nothing to review right now.'}</p>
+      ${session.done?`<p class="sub">${session.done} ${session.done===1?'card':'cards'} reviewed, ${acc}% remembered.</p>`:''}
+      ${next?`<p class="muted">Cards you're still learning come back in ${fmtIvl(Math.max(MIN,next-now))}.</p>`:''}
+      <button class="btn primary" id="rv-back" style="margin-top:20px">Back to today</button>
+    </div>`;
+  $('#rv-close').onclick=closeReview;$('#rv-back').onclick=closeReview;
+}
+document.addEventListener('keydown',e=>{
+  if($('#review').hidden||e.metaKey||e.ctrlKey||e.altKey) return;
+  if(e.key==='Escape') return closeReview();
+  if(!session.cur) return;
+  if(!session.revealed&&(e.key===' '||e.key==='Enter')){e.preventDefault();reveal();}
+  else if(session.revealed&&'1234'.includes(e.key)) grade(+e.key);
+  else if(e.key==='s'||e.key==='S') speak(sayText(session.cur));
+  else if(e.key==='z'||e.key==='u') undo();
+});
+
+/* ---------- 听写 (dictation tests) — separate from study progress ---------- */
+let dictHist=LS.get('zr.dict',[]);
+function saveDict(){LS.set('zr.dict',dictHist);}
+const dict={mode:settings.dictMode||'pinyin',scope:'all',picked:new Set(),shuffle:true,view:'setup',open:null};
+let test=null;
+function dictWords(){return notes().filter(n=>n.type==='vocab'&&canHand(n.hanzi));}
+function dictSelection(){return selectionOf(dict,dictWords());}
+function shuffled(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+const RES={right:'Correct',shaky:'Many mistakes',miss:"Didn't know"};
+function segHTML(){return `<div class="seg" role="tablist">${[['list','Word list'],['flash','Flashcards'],['dict','听写']].map(([v,l])=>`<button role="tab" data-wt="${v}" aria-selected="${wordsTab===v}">${l}</button>`).join('')}</div>`;}
+function bindSeg(){for(const b of document.querySelectorAll('[data-wt]')) b.addEventListener('click',()=>{wordsTab=b.dataset.wt;renderWords();window.scrollTo(0,0);});}
+
+/* ---------- Shared word picker (used by Flashcards and 听写) ---------- */
+function selectionOf(st,all){
+  if(st.scope==='all') return all;
+  if(st.scope==='pick') return all.filter(n=>st.picked.has(n.id));
+  return all.filter(n=>n.deck===st.scope);
+}
+function scopeHTML(st,all){
+  const ds=[...new Set(all.map(n=>n.deck))];
+  if(st.scope!=='all'&&st.scope!=='pick'&&!ds.includes(st.scope)) st.scope='all';
+  let picker='';
+  if(st.scope==='pick'){
+    let idx=0;
+    picker=`<div class="pick-tools"><span class="muted" id="pick-count"></span><span><button class="btn small" id="pick-all">Select all</button> <button class="btn small" id="pick-none">Clear</button></span></div>
+    <p class="muted" style="margin:0 0 10px">Tap to select. Swipe sideways across words to select many at once.</p>
+    <div id="pg">${ds.map(d=>`<h3 class="pick-h">${esc(d)}</h3><div class="pick-grid">${all.filter(n=>n.deck===d).map(n=>`<button class="tile" data-i="${idx++}" aria-pressed="${st.picked.has(n.id)}"><span class="hz">${esc(n.hanzi)}</span><span class="tp">${esc(n.pinyin)}</span></button>`).join('')}</div>`).join('')}</div>`;
+  }
+  return `<div class="chips">${[['all','All'],...ds.map(d=>[d,shortName(d)]),['pick','Choose words']].map(([v,l])=>`<button class="chip" data-ds="${esc(v)}" aria-pressed="${st.scope===v}">${esc(l)}</button>`).join('')}</div>${picker}`;
+}
+let PICK=null; // {st, all, onChange}
+function bindScope(st,all,rerender,onChange){
+  for(const b of document.querySelectorAll('[data-ds]')) b.addEventListener('click',()=>{st.scope=b.dataset.ds;rerender();});
+  PICK=st.scope==='pick'?{st,all,onChange}:null;
+  if(PICK){
+    $('#pick-all').addEventListener('click',()=>{for(const n of all) st.picked.add(n.id);paintPicker();});
+    $('#pick-none').addEventListener('click',()=>{st.picked.clear();paintPicker();});
+  }
+  paintPicker(st,all,onChange);
+}
+function paintPicker(st,all,onChange){
+  if(PICK){st=PICK.st;all=PICK.all;onChange=PICK.onChange;}
+  for(const t of document.querySelectorAll('#pg .tile')) t.setAttribute('aria-pressed',st.picked.has(all[+t.dataset.i].id));
+  const c=$('#pick-count');if(c) c.textContent=`${st.picked.size} selected`;
+  onChange&&onChange();
+}
+// Tap to toggle. Swipe sideways to start a range selection (like the Photos app), then drag in any direction.
+(function(){
+  let pid=null,dragging=false,anchor=-1,mode=true,base=null,last=-1,sx=0,sy=0,px=0,py=0,raf=0;
+  const tileAt=(x,y)=>{const el=document.elementFromPoint(x,y);const t=el&&el.closest&&el.closest('#pg .tile');return t?+t.dataset.i:-1;};
+  const apply=i=>{
+    if(!PICK||i<0||i===last) return;last=i;
+    const {st,all}=PICK,a=Math.min(anchor,i),b=Math.max(anchor,i);
+    all.forEach((n,k)=>{const want=(k>=a&&k<=b)?mode:base.has(n.id);if(want) st.picked.add(n.id);else st.picked.delete(n.id);});
+    paintPicker();
+  };
+  const loop=()=>{
+    if(!dragging){raf=0;return;}
+    const edge=90,bottomEdge=window.innerHeight-(window.innerWidth<=820?170:90);
+    let dy=0;if(py<edge) dy=-Math.ceil((edge-py)/6);else if(py>bottomEdge) dy=Math.ceil((py-bottomEdge)/6);
+    if(dy){window.scrollBy(0,dy);apply(tileAt(px,py));}
+    raf=requestAnimationFrame(loop);
+  };
+  const begin=()=>{dragging=true;apply(anchor);if(!raf) raf=requestAnimationFrame(loop);};
+  const toggle=i=>{const {st,all}=PICK,id=all[i].id;if(st.picked.has(id)) st.picked.delete(id);else st.picked.add(id);paintPicker();};
+  document.addEventListener('pointerdown',e=>{
+    if(!PICK) return;const t=e.target.closest&&e.target.closest('#pg .tile');if(!t) return;
+    pid=e.pointerId;anchor=+t.dataset.i;last=-1;sx=px=e.clientX;sy=py=e.clientY;dragging=false;
+    base=new Set(PICK.st.picked);mode=!PICK.st.picked.has(PICK.all[anchor].id);
+    if(e.pointerType==='mouse'){e.preventDefault();begin();}
+  });
+  window.addEventListener('pointermove',e=>{
+    if(pid!==e.pointerId) return;px=e.clientX;py=e.clientY;
+    if(!dragging){
+      const dx=Math.abs(e.clientX-sx),dy=Math.abs(e.clientY-sy);
+      if(dx>8&&dx>dy) begin();else if(dy>10){pid=null;return;}else return;
+    }
+    apply(tileAt(px,py));
+  });
+  window.addEventListener('pointerup',e=>{
+    if(pid!==e.pointerId) return;
+    if(!dragging&&PICK) toggle(anchor);
+    pid=null;dragging=false;
+  });
+  window.addEventListener('pointercancel',e=>{if(pid===e.pointerId){pid=null;dragging=false;}});
+  document.addEventListener('click',e=>{ // keyboard (Enter/Space) only
+    if(e.detail!==0||!PICK) return;const t=e.target.closest&&e.target.closest('#pg .tile');if(t) toggle(+t.dataset.i);
+  });
+})();
+
+/* ---------- 听写 setup ---------- */
+function renderDict(){
+  if(dict.view==='history') return renderDictHistory();
+  const all=dictWords();
+  $('#main').innerHTML=`
+    <h1>Words</h1>${segHTML()}
+    <h2>Prompt</h2>
+    <div class="opts">${[['pinyin','Pinyin','You get the pinyin and can play the sound.'],['meaning','Meaning','You get the English meaning only.']].map(([v,l,d])=>`<button class="opt" data-dm="${v}" aria-pressed="${dict.mode===v}"><b>${l}</b><span>${d}</span></button>`).join('')}</div>
+    <h2>Words</h2>
+    ${scopeHTML(dict,all)}
+    <div class="dict-bar">
+      <label class="shuf"><input type="checkbox" id="dict-shuf" ${dict.shuffle?'checked':''}> Random order</label>
+      <button class="btn primary" id="dict-start"></button>
+    </div>
+    <p style="margin-top:28px"><button class="btn" id="dict-hist">Past tests${dictHist.length?` (${dictHist.length})`:''}</button></p>`;
+  bindSeg();
+  for(const b of document.querySelectorAll('[data-dm]')) b.addEventListener('click',()=>{dict.mode=b.dataset.dm;settings.dictMode=dict.mode;saveSettings();renderDict();});
+  $('#dict-shuf').addEventListener('change',e=>{dict.shuffle=e.target.checked;});
+  $('#dict-start').addEventListener('click',()=>{const w=dictSelection();if(w.length) startDict(w);});
+  $('#dict-hist').addEventListener('click',()=>{dict.view='history';renderDict();window.scrollTo(0,0);});
+  bindScope(dict,all,renderDict,()=>{
+    const n=dictSelection().length,b=$('#dict-start');
+    if(b){b.textContent=n?`Start 听写 (${n} ${n===1?'word':'words'})`:'Choose some words';b.disabled=!n;}
+  });
+}
+
+/* ---------- Flashcards: quick review, separate from study progress ---------- */
+const flash={front:settings.flashFront||'hanzi',scope:'all',picked:new Set(),shuffle:true};
+let fsn=null;
+function flashWords(){return notes().filter(n=>n.type==='vocab');}
+function renderFlash(){
+  const all=flashWords();
+  $('#main').innerHTML=`
+    <h1>Words</h1>${segHTML()}
+    <h2>Front of the card</h2>
+    <div class="opts">${[['hanzi','Characters','See the characters, recall the pinyin and meaning.'],['meaning','Meaning','See the English, recall the characters.']].map(([v,l,d])=>`<button class="opt" data-ff="${v}" aria-pressed="${flash.front===v}"><b>${l}</b><span>${d}</span></button>`).join('')}</div>
+    <h2>Words</h2>
+    ${scopeHTML(flash,all)}
+    <div class="dict-bar">
+      <label class="shuf"><input type="checkbox" id="fl-shuf" ${flash.shuffle?'checked':''}> Random order</label>
+      <button class="btn primary" id="fl-start"></button>
+    </div>
+    <p class="muted" style="margin-top:24px">Flashcards are for quick review. They don't change your study schedule or streak.</p>`;
+  bindSeg();
+  for(const b of document.querySelectorAll('[data-ff]')) b.addEventListener('click',()=>{flash.front=b.dataset.ff;settings.flashFront=flash.front;saveSettings();renderFlash();});
+  $('#fl-shuf').addEventListener('change',e=>{flash.shuffle=e.target.checked;});
+  $('#fl-start').addEventListener('click',()=>{const w=selectionOf(flash,all);if(w.length) startFlash(w);});
+  bindScope(flash,all,renderFlash,()=>{
+    const n=selectionOf(flash,all).length,b=$('#fl-start');
+    if(b){b.textContent=n?`Start flashcards (${n} ${n===1?'word':'words'})`:'Choose some words';b.disabled=!n;}
+  });
+}
+function startFlash(words,round){
+  const list=flash.shuffle?shuffled([...words]):[...words];
+  fsn={front:flash.front,queue:list,i:0,know:[],learn:[],hist:[],flipped:false,round:round||1};
+  $('#flash').hidden=false;document.body.classList.add('locked');renderFlashCard();
+}
+function quitFlash(){fsn=null;$('#flash').hidden=true;document.body.classList.remove('locked');speechSynthesis?.cancel?.();render();}
+function toneHanzi(n){
+  const chars=[...n.hanzi],s=syl(n.pinyin),aligned=chars.filter(isHan).length===s.length;let i=0;
+  return chars.map(c=>isHan(c)&&aligned?`<span class="t${toneOf(s[i++])}">${esc(c)}</span>`:esc(c)).join('');
+}
+function renderFlashCard(){
+  const f=fsn;if(!f) return;
+  if(f.i>=f.queue.length) return renderFlashEnd();
+  const n=f.queue[f.i],ex=exList(n)[0];
+  const front=f.front==='hanzi'?`<div class="fc-hz">${esc(n.hanzi)}</div>`:`<div class="fc-mn">${esc(n.meaning)}</div>`;
+  const back=`<div class="fc-hz fc-hz-b">${toneHanzi(n)}</div><div class="fc-py">${pyHTML(n.pinyin)}</div><div class="fc-mn2">${esc(n.meaning)}</div>${ex?`<button class="exb fc-ex" data-say="${esc(ex.zh)}"><span class="zh">${esc(ex.zh)}</span>${ex.en?`<span class="e">${esc(ex.en)}</span>`:''}</button>`:''}`;
+  $('#flash').innerHTML=`
+    <div class="progress-line"><i style="width:${f.i/f.queue.length*100}%"></i></div>
+    <div class="rv-top">
+      <button class="icon-btn" id="fc-close" aria-label="End flashcards">${ICON.close}</button>
+      <div class="left">Card ${f.i+1} of ${f.queue.length}${f.round>1?`, round ${f.round}`:''}</div>
+      <button class="icon-btn" id="fc-say" aria-label="Play sound">${ICON.sound}</button>
+      <button class="icon-btn" id="fc-undo" aria-label="Undo last card" ${f.hist.length?'':'disabled style="opacity:.35"'}>${ICON.undo}</button>
+    </div>
+    <div class="fc-count"><span class="fc-l"><b>${f.learn.length}</b> still learning</span><span class="fc-k"><b>${f.know.length}</b> know</span></div>
+    <div class="fc-stage">
+      <div class="fc-swipe" id="fcs">
+        <div class="fc-card ${f.flipped?'flipped':''}" id="fcc">
+          <div class="fc-face fc-front">${front}<p class="fc-hint">Tap to flip</p></div>
+          <div class="fc-face fc-back">${back}</div>
+        </div>
+        <div class="fc-tag fc-tag-l" id="fct-l">Still learning</div>
+        <div class="fc-tag fc-tag-r" id="fct-r">Know it</div>
+      </div>
+    </div>
+    <div class="rv-bottom"><div class="hw-actions"><button class="btn fc-btn-l" id="fc-learn">Still learning</button><button class="btn fc-btn-k" id="fc-know">Know it</button></div><div class="keys">Space to flip, left and right arrows to sort</div></div>`;
+  $('#fc-close').onclick=quitFlash;
+  $('#fc-say').onclick=()=>speak(n.hanzi);
+  $('#fc-undo').onclick=undoFlash;
+  $('#fc-learn').onclick=()=>sortFlash(false);
+  $('#fc-know').onclick=()=>sortFlash(true);
+  const sw=$('#fcs'),tl=$('#fct-l'),tr=$('#fct-r');
+  let down=false,moved=false,sx=0,sy=0,dx=0;
+  sw.onpointerdown=e=>{if(e.target.closest('.exb')) return;down=true;moved=false;sx=e.clientX;sy=e.clientY;dx=0;sw.setPointerCapture?.(e.pointerId);sw.style.transition='none';};
+  sw.onpointermove=e=>{
+    if(!down) return;dx=e.clientX-sx;const dy=e.clientY-sy;
+    if(Math.abs(dx)>8||Math.abs(dy)>8) moved=true;
+    if(!moved) return;
+    sw.style.transform=`translateX(${dx}px) rotate(${dx/20}deg)`;
+    tl.style.opacity=Math.min(1,Math.max(0,-dx/90));tr.style.opacity=Math.min(1,Math.max(0,dx/90));
+  };
+  const up=()=>{
+    if(!down) return;down=false;sw.style.transition='';
+    if(!moved){flipFlash();return;}
+    if(Math.abs(dx)>90) sortFlash(dx>0);
+    else {sw.style.transform='';tl.style.opacity=0;tr.style.opacity=0;}
+  };
+  sw.onpointerup=up;sw.onpointercancel=()=>{down=false;sw.style.transition='';sw.style.transform='';tl.style.opacity=0;tr.style.opacity=0;};
+}
+function flipFlash(){if(!fsn) return;fsn.flipped=!fsn.flipped;$('#fcc')?.classList.toggle('flipped',fsn.flipped);}
+function sortFlash(know){
+  const f=fsn;if(!f||f.busy) return;f.busy=true;
+  const n=f.queue[f.i],sw=$('#fcs');
+  (know?f.know:f.learn).push(n);f.hist.push(know);
+  const tag=$(know?'#fct-r':'#fct-l');if(tag) tag.style.opacity=1;
+  if(sw){sw.style.transition='transform .22s ease-in';sw.style.transform=`translateX(${know?'':'-'}130vw) rotate(${know?18:-18}deg)`;}
+  setTimeout(()=>{if(fsn!==f) return;f.busy=false;f.i++;f.flipped=false;renderFlashCard();},matchMedia('(prefers-reduced-motion: reduce)').matches?0:200);
+}
+function undoFlash(){
+  const f=fsn;if(!f||!f.hist.length) return;
+  const know=f.hist.pop();(know?f.know:f.learn).pop();f.i--;f.flipped=false;renderFlashCard();
+}
+function renderFlashEnd(){
+  const f=fsn,total=f.know.length+f.learn.length;
+  $('#flash').innerHTML=`
+    <div class="rv-top"><button class="icon-btn" id="fc-close" aria-label="Close">${ICON.close}</button><div class="left">Flashcards${f.round>1?`, round ${f.round}`:''}</div></div>
+    <div class="rv-body" style="text-align:left;align-items:stretch;max-width:640px;width:100%;margin:0 auto">
+      <div class="score"><b>${f.know.length}</b><span>/ ${total}</span></div>
+      <p class="sub" style="text-align:center">${f.learn.length?`You know ${f.know.length} of ${total}. ${f.learn.length} still to learn.`:'You know every card in this set.'}</p>
+      ${f.learn.length?`<h2 style="margin-top:24px">Still learning</h2><div class="list">${f.learn.map(n=>`<div class="item"><div class="row dres"><span class="hz">${esc(n.hanzi)}</span><span><span class="py">${pyHTML(n.pinyin)}</span><br><span class="mn">${esc(n.meaning)}</span></span><span></span></div></div>`).join('')}</div>`:''}
+    </div>
+    <div class="rv-bottom"><div class="hw-actions">${f.learn.length?`<button class="btn primary" id="fc-again">Review ${f.learn.length} again</button>`:`<button class="btn primary" id="fc-restart">Go through all again</button>`}<button class="btn" id="fc-done">Done</button></div></div>`;
+  $('#flash').scrollTop=0;
+  $('#fc-close').onclick=quitFlash;$('#fc-done').onclick=quitFlash;
+  const a=$('#fc-again');if(a) a.onclick=()=>startFlash(f.learn,f.round+1);
+  const r=$('#fc-restart');if(r) r.onclick=()=>startFlash(f.queue,1);
+}
+document.addEventListener('keydown',e=>{
+  if($('#flash').hidden||!fsn||e.metaKey||e.ctrlKey||e.altKey) return;
+  if(e.key==='Escape') return quitFlash();
+  if(fsn.i>=fsn.queue.length) return;
+  if(e.key===' '||e.key==='Enter'){e.preventDefault();flipFlash();}
+  else if(e.key==='ArrowRight') sortFlash(true);
+  else if(e.key==='ArrowLeft') sortFlash(false);
+  else if(e.key==='z'||e.key==='u') undoFlash();
+  else if(e.key==='s'||e.key==='S') speak(fsn.queue[fsn.i].hanzi);
+});
+
+/* Test */
+function startDict(words){
+  const list=dict.shuffle?shuffled([...words]):[...words];
+  test={mode:dict.mode,items:list.map(n=>({n,result:null,mistakes:0})),i:0,ci:0,answer:false};
+  $('#dict').hidden=false;document.body.classList.add('locked');renderDictCard();
+}
+function quitDict(force){
+  if(!force&&test&&!test.done&&test.i>0&&!confirm('End this test? It won\'t be saved.')) return;
+  test=null;$('#dict').hidden=true;document.body.classList.remove('locked');speechSynthesis?.cancel?.();render();
+}
+function dictTop(){
+  const t=test,it=t.items[t.i];
+  return `<div class="progress-line"><i style="width:${t.i/t.items.length*100}%"></i></div>
+    <div class="rv-top">
+      <button class="icon-btn" id="dt-close" aria-label="End test">${ICON.close}</button>
+      <div class="left">听写 ${Math.min(t.i+1,t.items.length)} of ${t.items.length}</div>
+      ${t.mode==='pinyin'||t.answer?`<button class="icon-btn" id="dt-say" aria-label="Play sound">${ICON.sound}</button>`:''}
+    </div>`;
+}
+function renderDictCard(){
+  const t=test;if(!t) return;
+  if(t.i>=t.items.length) return finishDict();
+  const it=t.items[t.i],n=it.n,chars=[...n.hanzi].filter(isHan);
+  const box=$('#dict');
+  if(t.answer){
+    box.innerHTML=`${dictTop()}
+      <div class="rv-body">
+        <p class="prompt" style="margin-bottom:10px;font-size:clamp(20px,4.5vw,26px)">${esc(n.meaning)}</p>
+        ${cellsHTML(n.hanzi,n.pinyin,{show:true,color:true,pinyin:true})}
+        <p class="verdict">${it.result==='miss'?'Marked as didn\'t know.':''}</p>
+      </div>
+      <div class="rv-bottom"><button class="btn primary reveal" id="dt-next">${t.i+1<t.items.length?'Next word':'See results'}</button><div class="keys">Enter for next</div></div>`;
+    $('#dt-next').onclick=()=>{t.answer=false;t.i++;t.ci=0;renderDictCard();};
+  } else {
+    const size=Math.floor(Math.max(200,Math.min(340,window.innerWidth-40,window.innerHeight-(chars.length>1?400:340))));
+    const mini=chars.map((c,i)=>`<div class="cell ${i===t.ci?'now':''}">${GRID}<span>${i<t.ci?esc(c):''}</span></div>`).join('');
+    const prompt=t.mode==='pinyin'
+      ?`<div class="dict-py">${pyHTML(n.pinyin)}</div>`
+      :`<p class="prompt" style="margin-bottom:6px;font-size:clamp(20px,4.5vw,26px)">${esc(n.meaning)}</p>`;
+    box.innerHTML=`${dictTop()}
+      <div class="rv-body">
+        ${prompt}
+        ${chars.length>1?`<div class="mini">${mini}</div>`:'<div style="height:10px"></div>'}
+        <div class="cell hwcell" id="dhw" style="--c:${size}px;font-size:0">${GRID}</div>
+        <p class="hw-status">${chars.length>1?`Character ${t.ci+1} of ${chars.length}`:'&nbsp;'}</p>
+      </div>
+      <div class="rv-bottom"><button class="btn reveal" id="dt-idk">I don't know</button></div>`;
+    const w=HanziWriter.create('dhw',chars[t.ci],{
+      width:size-4,height:size-4,padding:Math.round(size*.06),
+      showCharacter:false,showOutline:false,showHintAfterMisses:false,highlightOnComplete:true,
+      strokeColor:cssVar('--ink'),outlineColor:cssVar('--grid-soft'),drawingColor:cssVar('--t3'),highlightColor:cssVar('--t2'),
+      drawingWidth:Math.max(14,Math.round(size/14)),charDataLoader:(c,done)=>done(STROKES[c])
+    });
+    const thisItem=it;
+    w.quiz({
+      onMistake:()=>{thisItem.mistakes++;},
+      onComplete:()=>setTimeout(()=>{
+        if(!test||test.items[test.i]!==thisItem) return;
+        t.ci++;
+        if(t.ci<chars.length) return renderDictCard();
+        thisItem.result=thisItem.mistakes<=chars.length?'right':'shaky';
+        t.i++;t.ci=0;renderDictCard();
+      },500)
+    });
+    $('#dt-idk').onclick=()=>{w.cancelQuiz();it.result='miss';t.answer=true;renderDictCard();};
+  }
+  $('#dt-close').onclick=()=>quitDict();
+  const s=$('#dt-say');if(s) s.onclick=()=>speak(n.hanzi);
+}
+function finishDict(){
+  const t=test;t.done=true;
+  const items=t.items.map(x=>({id:x.n.id,deck:x.n.deck,hanzi:x.n.hanzi,pinyin:x.n.pinyin,meaning:x.n.meaning,result:x.result||'miss',mistakes:x.mistakes}));
+  const rec={t:Date.now(),mode:t.mode,total:items.length,right:items.filter(x=>x.result==='right').length,items};
+  dictHist.unshift(rec);if(dictHist.length>300) dictHist.length=300;saveDict();
+  renderDictResult(rec,true);
+}
+function resultRows(items){
+  return `<div class="list">${items.map(x=>`<div class="item"><div class="row dres"><span class="hz">${esc(x.hanzi)}</span><span><span class="py">${pyHTML(x.pinyin)}</span><br><span class="mn">${esc(x.meaning)}</span></span><span class="status r-${x.result}">${RES[x.result]}${x.result!=='miss'&&x.mistakes?` (${x.mistakes})`:''}</span></div></div>`).join('')}</div>`;
+}
+function renderDictResult(rec,fresh){
+  const wrong=rec.items.filter(x=>x.result!=='right');
+  const shaky=rec.items.filter(x=>x.result==='shaky').length,miss=rec.items.filter(x=>x.result==='miss').length;
+  $('#dict').innerHTML=`
+    <div class="rv-top"><button class="icon-btn" id="dt-close" aria-label="Close">${ICON.close}</button><div class="left">听写 results</div></div>
+    <div class="rv-body" style="text-align:left;align-items:stretch;max-width:640px;width:100%;margin:0 auto">
+      <div class="score"><b>${rec.right}</b><span>/ ${rec.total}</span></div>
+      <p class="sub" style="text-align:center">${rec.right===rec.total?'Every word correct.':[shaky?`${shaky} with many mistakes`:'',miss?`${miss} didn't know`:''].filter(Boolean).join(', ')+'.'}</p>
+      <p class="muted" style="text-align:center;margin-top:4px">${rec.mode==='pinyin'?'Pinyin prompts':'Meaning prompts'}. Correct means at most one wrong stroke per character.</p>
+      <div style="margin-top:20px">${resultRows([...wrong,...rec.items.filter(x=>x.result==='right')])}</div>
+    </div>
+    <div class="rv-bottom"><div class="hw-actions">${wrong.length?`<button class="btn primary" id="dt-retry">Retest ${wrong.length} missed</button>`:`<button class="btn primary" id="dt-done2">Done</button>`}<button class="btn" id="dt-hist">Past tests</button></div></div>`;
+  $('#dict').scrollTop=0;
+  $('#dt-close').onclick=()=>quitDict(true);
+  $('#dt-hist').onclick=()=>{quitDict(true);wordsTab='dict';dict.view='history';go('words');};
+  const d2=$('#dt-done2');if(d2) d2.onclick=()=>quitDict(true);
+  const r=$('#dt-retry');if(r) r.onclick=()=>{
+    const ids=new Set(wrong.map(x=>x.id));const words=dictWords().filter(n=>ids.has(n.id));
+    dict.mode=rec.mode;if(words.length) startDict(words);
+  };
+}
+function renderDictHistory(){
+  const miss={};
+  for(const r of dictHist) for(const x of r.items) if(x.result!=='right'){(miss[x.id]??={x,c:0}).c++;}
+  const top=Object.values(miss).sort((a,b)=>b.c-a.c).slice(0,12);
+  $('#main').innerHTML=`
+    <h1>Words</h1>${segHTML()}
+    <p style="margin:20px 0 0"><button class="btn small" id="dh-back">Back to 听写 setup</button></p>
+    <h2>Past tests</h2>
+    ${dictHist.length?`
+      ${top.length?`<div class="sheet" style="padding:16px 18px;margin-bottom:16px"><strong>Most missed words</strong>
+        <div class="missed">${top.map(m=>`<span class="mchip"><span class="hz">${esc(m.x.hanzi)}</span> ${m.c}×</span>`).join('')}</div>
+        <button class="btn small" id="dh-test">Test these words</button></div>`:''}
+      <div class="list">${dictHist.map((r,i)=>`<div class="item"><button class="row hrow" data-h="${i}" aria-expanded="${dict.open===i}"><span><strong>${r.right} / ${r.total}</strong></span><span><span class="mn">${new Date(r.t).toLocaleDateString(undefined,{month:'short',day:'numeric'})}, ${new Date(r.t).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</span><br><span class="muted">${r.mode==='pinyin'?'Pinyin':'Meaning'} prompts, ${[...new Set(r.items.map(x=>shortName(x.deck)))].join(' + ')}</span></span><span class="status ${r.right===r.total?'mature':r.right/r.total>=.7?'young':'learning'}">${Math.round(r.right/r.total*100)}%</span></button><div class="detail" ${dict.open===i?'':'hidden'}>${resultRows(r.items)}</div></div>`).join('')}</div>
+      <p style="margin-top:20px"><button class="btn small danger" id="dh-clear">Clear test history</button></p>`
+    :`<div class="sheet empty">No tests yet. Finish a 听写 and it will show up here.</div>`}`;
+  bindSeg();
+  $('#dh-back').onclick=()=>{dict.view='setup';renderDict();};
+  for(const b of document.querySelectorAll('[data-h]')) b.onclick=()=>{const i=+b.dataset.h;dict.open=dict.open===i?null:i;renderDictHistory();};
+  const tb=$('#dh-test');if(tb) tb.onclick=()=>{dict.picked=new Set(top.map(m=>m.x.id));dict.scope='pick';dict.view='setup';renderDict();window.scrollTo(0,0);};
+  const cb=$('#dh-clear');if(cb) cb.onclick=()=>{if(confirm('Delete all past 听写 results? Study progress is not affected.')){dictHist=[];saveDict();renderDictHistory();}};
+}
+document.addEventListener('keydown',e=>{
+  if($('#dict').hidden||!test||e.metaKey||e.ctrlKey||e.altKey) return;
+  if(e.key==='Escape') return quitDict(test.done);
+  if(e.key==='Enter'&&test.answer){e.preventDefault();$('#dt-next')?.click();}
+});
+
+/* ---------- Boot ---------- */
+for(const b of document.querySelectorAll('.tab')) b.addEventListener('click',()=>go(b.dataset.view));
+document.addEventListener('click',e=>{const g=e.target.closest('[data-go]');if(g) go(g.dataset.go);const x=e.target.closest('.exb,.play');if(x) speak(x.dataset.say);});
+if('speechSynthesis' in window){speechSynthesis.getVoices();speechSynthesis.addEventListener?.('voiceschanged',()=>{if(view==='settings'&&$('#review').hidden) renderSettings();});}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&$('#review').hidden) render();});
+go('today');
+if('serviceWorker' in navigator&&location.protocol==='https:'){
+  const hadController=!!navigator.serviceWorker.controller;let reloading=false;
+  // When a new version has been installed, reload once so it shows straight away.
+  navigator.serviceWorker.addEventListener('controllerchange',()=>{if(!hadController||reloading) return;reloading=true;if($('#review').hidden&&$('#dict').hidden&&$('#flash').hidden) location.reload();});
+  navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{
+    reg.update().catch(()=>{});
+    document.addEventListener('visibilitychange',()=>{if(!document.hidden) reg.update().catch(()=>{});});
+  }).catch(()=>{});
+}
+if(navigator.storage&&navigator.storage.persist) navigator.storage.persist().catch(()=>{});
+</script>
+</body>
+</html>

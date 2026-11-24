@@ -1,0 +1,8 @@
+{
+  // Cloudflare deploys the files in ./public as a static site at zi-review.<account>.workers.dev
+  "name": "zi-review",
+  "compatibility_date": "2026-11-01",
+  "assets": {
+    "directory": "./public"
+  }
+}
