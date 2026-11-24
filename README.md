@@ -15,3 +15,5 @@ A personal Mandarin study app for the Boya 中级冲刺 course: spaced-repetitio
 Pushing to `main` deploys automatically once the Cloudflare Worker is connected to this repo (Workers & Pages → zi-review → Settings → Build).
 
 Manual deploy: `npx wrangler deploy`
+
+Auto-deploy from GitHub connected on 2026-11-24.
